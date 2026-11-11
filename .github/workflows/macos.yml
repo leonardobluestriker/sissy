@@ -1,0 +1,52 @@
+name: Build macOS app and DMG
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'Cargo.*'
+      - 'rust-toolchain.toml'
+      - 'scripts/package-macos.sh'
+      - '.github/workflows/macos.yml'
+permissions:
+  contents: write
+jobs:
+  package:
+    runs-on: macos-14
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test core and compile universal bundle
+        run: |
+          cargo test --locked
+          ./scripts/package-macos.sh universal
+      - name: Validate and archive
+        run: |
+          plutil -lint dist/universal/Sissy.app/Contents/Info.plist
+          lipo -verify_arch arm64 x86_64 dist/universal/Sissy.app/Contents/MacOS/Sissy
+          codesign --verify --strict --verbose=2 dist/universal/Sissy.app
+          hdiutil verify dist/universal/Sissy-universal.dmg
+          ditto -c -k --sequesterRsrc --keepParent dist/universal/Sissy.app dist/universal/Sissy-universal.app.zip
+          cd dist/universal
+          shasum -a 256 Sissy-universal.dmg Sissy-universal.app.zip > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sissy-macOS-universal
+          path: |
+            dist/universal/Sissy-universal.dmg
+            dist/universal/Sissy-universal.app.zip
+            dist/universal/SHA256SUMS.txt
+      - name: Publish downloadable preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: macos-preview-${{ github.run_number }}-${{ github.run_attempt }}
+        run: |
+          cat > /tmp/release-notes.md <<'NOTES'
+          Build universal macOS 11+ (Apple Silicon e Intel).
+          Baixe o DMG ou o ZIP contendo Sissy.app. Verifique os hashes em SHA256SUMS.txt.
+          Assinatura apenas ad-hoc: sem Developer ID e sem notarização Apple. O Gatekeeper pode bloquear a abertura.
+          Build automatizado e validação estrutural não substituem testes manuais da interface, permissões e Lixo no Mac.
+          NOTES
+          gh release create "$RELEASE_TAG" --target "$GITHUB_SHA" --prerelease --title "Sissy · macOS universal · $RELEASE_TAG" --notes-file /tmp/release-notes.md dist/universal/Sissy-universal.dmg dist/universal/Sissy-universal.app.zip dist/universal/SHA256SUMS.txt

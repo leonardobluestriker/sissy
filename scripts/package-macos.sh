@@ -22,10 +22,10 @@ if [[ "$mode" == universal ]]; then
 else
  cp "target/${targets[0]}/release/sissy" "$app/Contents/MacOS/Sissy"
 fi
-# Render the original SVG with macOS Quick Look, then create all standard icon sizes.
+# Use the supplied PNG artwork to generate the standard ICNS sizes.
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-qlmanage -t -s 1024 -o "$tmp" assets/sissy.svg >/dev/null
+sips -s format png "assets/SISSY_ICON_MAC.icon/Assets/Cheerful Lime Snake Mascot.png" --out "$tmp/sissy.svg.png" >/dev/null
 mkdir -p "$tmp/Sissy.iconset"
 for size in 16 32 128 256 512; do
  sips -z "$size" "$size" "$tmp/sissy.svg.png" --out "$tmp/Sissy.iconset/icon_${size}x${size}.png" >/dev/null
