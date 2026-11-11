@@ -19,6 +19,12 @@ Pode fazer um fork, experimentar, modificar o código e dar ao Sissy a sua cara.
 
 Não precisa chegar sabendo Rust nem trazendo uma entrega gigante. Um relato claro, um teste em outro Mac, uma revisão de texto ou um desenho também ajudam a deixar o Sissy mais humano. **[Veja como contribuir](CONTRIBUTING.md).**
 
+## Baixar e testar
+
+A **[versão 0.1.0 alpha está nas Releases](https://github.com/leonardobluestriker/sissy/releases/tag/v0.1.0-alpha)**.
+
+Baixe o DMG para **Mac com Apple Silicon (M1 e posteriores)**, abra e arraste Sissy para Aplicativos. O arquivo `SHA256SUMS.txt` permite conferir a integridade do download. Esta alpha usa assinatura local ad-hoc, sem notarização Apple, e o macOS pode bloquear a abertura. Comece com arquivos de teste e confira as limitações nas notas da release. Ainda não há um download Intel validado nesta entrega.
+
 ## O Sissy na tela
 
 ![Sissy rodando no macOS em modo escuro, com seleção de pastas e revisão de arquivos](artifacts/sissy-macos-dark.png)
