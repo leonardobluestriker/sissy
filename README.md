@@ -19,6 +19,21 @@ Pode fazer um fork, experimentar, modificar o código e dar ao Sissy a sua cara.
 
 Não precisa chegar sabendo Rust nem trazendo uma entrega gigante. Um relato claro, um teste em outro Mac, uma revisão de texto ou um desenho também ajudam a deixar o Sissy mais humano. **[Veja como contribuir](CONTRIBUTING.md).**
 
+## O Sissy na tela
+
+![Sissy rodando no macOS em modo escuro, com seleção de pastas e revisão de arquivos](artifacts/sissy-macos-dark.png)
+
+*Captura real da versão atual no Mac, em modo escuro. A análise só começa quando você escolhe as pastas e clica em Analisar pastas.*
+
+<details>
+<summary>Ver também uma demonstração com resultados</summary>
+
+![Demonstração do Sissy com um resultado encontrado após analisar arquivos de exemplo](artifacts/sissy-interface-resultados.png)
+
+*Captura real de uma versão anterior da interface, executada no Linux com arquivos de demonstração. O visual atual no Mac está na imagem acima.*
+
+</details>
+
 ## O que já funciona
 
 - Análise local de pastas pessoais e discos montados em `/Volumes`, selecionados por você.
