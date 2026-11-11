@@ -49,6 +49,18 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>NSAppleEventsUsageDescription</key><string>Permitir que o Finder mova somente os arquivos confirmados ao Lixo.</string>
 </dict></plist>
 PLIST
+# Xcode 26+ compiles Icon Composer layers and appearance variants into Assets.car.
+# Keep the ICNS above as a compatibility fallback on older versions of macOS.
+if ! xcrun --find actool >/dev/null 2>&1; then
+ echo 'Icon Composer requer Xcode completo 26 ou superior (não apenas Command Line Tools).'
+ exit 1
+fi
+xcrun actool assets/SISSY_ICON_MAC.icon \
+ --compile "$app/Contents/Resources" \
+ --platform macosx --minimum-deployment-target "$MACOSX_DEPLOYMENT_TARGET" \
+ --target-device mac --app-icon SISSY_ICON_MAC \
+ --output-partial-info-plist "$tmp/icon-info.plist"
+/usr/libexec/PlistBuddy -c 'Add :CFBundleIconName string SISSY_ICON_MAC' "$app/Contents/Info.plist"
 # Ad-hoc signing enables local Apple Silicon execution; this is NOT Developer ID or notarization.
 codesign --force --sign - "$app"
 mkdir -p "$tmp/image"

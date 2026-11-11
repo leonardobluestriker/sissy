@@ -80,3 +80,9 @@ As novas capturas estão em `artifacts/sissy-interface-nova.png` e `artifacts/si
 ## Distribuição pelo GitHub Actions
 
 O workflow `.github/workflows/macos.yml` roda em `macos-14` após alterações de código na branch `main` ou acionamento manual. Ele executa testes, gera o bundle universal e o DMG, valida plist/arquiteturas/assinatura ad-hoc/integridade do DMG, arquiva o `.app` em ZIP e publica uma pré-release com os dois downloads e SHA-256. Consulte Actions e Releases para confirmar o resultado de cada execução. A inclusão do workflow não comprova que um build já terminou: permissões, disponibilidade do runner e possíveis erros aparecem na execução do GitHub. A assinatura é apenas ad-hoc, sem Developer ID ou notarização. O ICNS agora é gerado com o PNG fornecido pelo usuário; a composição nativa Icon Composer continua preservada como fonte.
+
+### Atualização do Icon Composer
+
+A composição atualizada em `assets/SISSY_ICON_MAC.icon` contém a camada colorida e `sissymono2.png` para aparência tingida. O empacotamento agora exige Xcode completo 26+ e chama `actool` para gerar os recursos nativos, com `CFBundleIconName=SISSY_ICON_MAC`. O workflow usa macOS 15 e seleciona o Xcode estável mais recente disponível. O ICNS continua como fallback para macOS antigos. Esta integração precisa ser validada no runner macOS; não foi executada no Linux.
+
+O PNG interno `Cheerful Lime Snake Mascot.png` não mudou nesta atualização e continua usado pela interface e pelo fallback ICNS. A versão PNG com fundo verde mostrada na conversa ainda não está disponível como arquivo no checkout; sua substituição nas outras plataformas está pendente do envio do arquivo PNG original.

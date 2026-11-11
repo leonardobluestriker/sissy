@@ -14,10 +14,13 @@ permissions:
   contents: write
 jobs:
   package:
-    runs-on: macos-14
+    runs-on: macos-15
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
       - name: Test core and compile universal bundle
         run: |
           cargo test --locked
