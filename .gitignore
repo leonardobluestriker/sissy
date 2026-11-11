@@ -2,3 +2,7 @@
 /dist
 
 /artifacts/*.tar.gz
+
+# macOS metadata and local UI fixtures
+.DS_Store
+/sissy-ui-demo

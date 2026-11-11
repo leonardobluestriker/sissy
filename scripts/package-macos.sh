@@ -3,6 +3,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 [[ $(uname -s) == Darwin ]] || { echo 'Execute em macOS com Xcode Command Line Tools'; exit 1; }
 export MACOSX_DEPLOYMENT_TARGET=11.0
+export CARGO_TARGET_DIR="$(pwd)/target"
+python3 scripts/render-icon.py
 mode=${1:-universal}
 case "$mode" in
  universal) targets=(aarch64-apple-darwin x86_64-apple-darwin);;
@@ -25,7 +27,7 @@ fi
 # Use the supplied PNG artwork to generate the standard ICNS sizes.
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
-sips -s format png "assets/SISSY_ICON_MAC.icon/Assets/Cheerful Lime Snake Mascot.png" --out "$tmp/sissy.svg.png" >/dev/null
+sips -s format png "assets/Sissy-composed.png" --out "$tmp/sissy.svg.png" >/dev/null
 mkdir -p "$tmp/Sissy.iconset"
 for size in 16 32 128 256 512; do
  sips -z "$size" "$size" "$tmp/sissy.svg.png" --out "$tmp/Sissy.iconset/icon_${size}x${size}.png" >/dev/null
@@ -40,7 +42,10 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleExecutable</key><string>Sissy</string>
 <key>CFBundleIdentifier</key><string>dev.sissy.cleaner</string>
 <key>CFBundleName</key><string>Sissy</string>
-<key>CFBundleVersion</key><string>1</string>
+<key>CFBundleVersion</key><string>20261111.3</string>
+<key>NSHumanReadableCopyright</key><string>© 2026 STRIKER Code Team</string>
+<key>CFBundleDevelopmentRegion</key><string>pt</string>
+<key>CFBundleLocalizations</key><array><string>pt</string><string>en</string><string>es</string><string>ja</string></array>
 <key>CFBundleShortVersionString</key><string>0.1.0</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleIconFile</key><string>Sissy</string>
@@ -49,18 +54,18 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>NSAppleEventsUsageDescription</key><string>Permitir que o Finder mova somente os arquivos confirmados ao Lixo.</string>
 </dict></plist>
 PLIST
-# Xcode 26+ compiles Icon Composer layers and appearance variants into Assets.car.
-# Keep the ICNS above as a compatibility fallback on older versions of macOS.
-if ! xcrun --find actool >/dev/null 2>&1; then
- echo 'Icon Composer requer Xcode completo 26 ou superior (não apenas Command Line Tools).'
- exit 1
+# Xcode 26+ compiles Icon Composer layers into Assets.car.
+# Command Line Tools can still ship a working app with the ICNS fallback.
+if xcrun --find actool >/dev/null 2>&1; then
+ xcrun actool icon_file/SISSY_ICON_MAC.icon \
+  --compile "$app/Contents/Resources" \
+  --platform macosx --minimum-deployment-target "$MACOSX_DEPLOYMENT_TARGET" \
+  --target-device mac --app-icon SISSY_ICON_MAC \
+  --output-partial-info-plist "$tmp/icon-info.plist"
+ /usr/libexec/PlistBuddy -c 'Add :CFBundleIconName string SISSY_ICON_MAC' "$app/Contents/Info.plist"
+else
+ echo 'actool ausente (Xcode completo). O app usa Sissy.icns.'
 fi
-xcrun actool assets/SISSY_ICON_MAC.icon \
- --compile "$app/Contents/Resources" \
- --platform macosx --minimum-deployment-target "$MACOSX_DEPLOYMENT_TARGET" \
- --target-device mac --app-icon SISSY_ICON_MAC \
- --output-partial-info-plist "$tmp/icon-info.plist"
-/usr/libexec/PlistBuddy -c 'Add :CFBundleIconName string SISSY_ICON_MAC' "$app/Contents/Info.plist"
 # Ad-hoc signing enables local Apple Silicon execution; this is NOT Developer ID or notarization.
 codesign --force --sign - "$app"
 mkdir -p "$tmp/image"

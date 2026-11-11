@@ -1,0 +1,156 @@
+Português	English	Español	日本語
+Idioma	Language	Idioma	言語
+modificado hoje	modified today	modificado hoy	今日更新
+modificado há 1 dia	modified 1 day ago	modificado hace 1 día	1日前に更新
+modificado há {days} dias	modified {days} days ago	modificado hace {days} días	{days}日前に更新
+data de modificação no futuro	modification date is in the future	fecha de modificación futura	更新日時が未来になっています
+Neste disco: {:.1} GiB livres de {:.1} GiB	Mac: {:.1} GiB free of {:.1} GiB	Mac: {:.1} GiB libres de {:.1} GiB	Mac：空き {:.1} GiB / {:.1} GiB
+Análise local. Nada sai deste Mac.	Local analysis. Nothing leaves this Mac.	Análisis local. Nada sale de este Mac.	このMac内で解析。外部への送信はありません。
+Sobre o Sissy	About Sissy	Acerca de Sissy	Sissyについて
+Serviços	Services	Servicios	サービス
+Ocultar Sissy	Hide Sissy	Ocultar Sissy	Sissyを非表示
+Ocultar os outros	Hide Others	Ocultar los demás	ほかを非表示
+Mostrar tudo	Show All	Mostrar todo	すべてを表示
+Encerrar Sissy	Quit Sissy	Salir de Sissy	Sissyを終了
+Escolher pasta…	Choose folder…	Elegir carpeta…	フォルダを選択…
+Analisar pastas	Analyze folders	Analizar carpetas	フォルダを解析
+Exportar relatório…	Export report…	Exportar informe…	レポートを書き出す…
+Revisar envio ao Lixo…	Review moving to Trash…	Revisar envío a la Papelera…	ゴミ箱に移す前に確認…
+Fechar	Close	Cerrar	閉じる
+Desfazer	Undo	Deshacer	取り消す
+Refazer	Redo	Rehacer	やり直す
+Recortar	Cut	Cortar	カット
+Copiar	Copy	Copiar	コピー
+Colar	Paste	Pegar	ペースト
+Selecionar tudo	Select All	Seleccionar todo	すべてを選択
+Modo simples	Simple mode	Modo sencillo	シンプルモード
+Modo avançado	Advanced mode	Modo avanzado	詳細モード
+Resultados	Results	Resultados	結果
+Relatórios	Reports	Informes	レポート
+Dicas	Tips	Consejos	ヒント
+Minimizar	Minimize	Minimizar	しまう
+Ampliar	Zoom	Ampliar	拡大
+Tela cheia	Full Screen	Pantalla completa	フルスクリーン
+Sem se enrolar	A little guidance	Sin enredos	使い方のヒント
+Arquivo	File	Archivo	ファイル
+Editar	Edit	Editar	編集
+Visualizar	View	Ver	表示
+Janela	Window	Ventana	ウインドウ
+Ajuda	Help	Ayuda	ヘルプ
+Grande	Large	Grande	大容量
+Download antigo	Old download	Descarga antigua	古いダウンロード
+Cache	Cache	Caché	キャッシュ
+Mídia	Media	Multimedia	メディア
+Cópia	Copy	Copia	コピー
+Mesa	Desktop	Escritorio	デスクトップ
+Documentos	Documents	Documentos	書類
+Downloads	Downloads	Descargas	ダウンロード
+Outros	Other	Otros	その他
+Não foi possível mostrar no Finder. Verifique as permissões.	Could not reveal in Finder. Check permissions.	No se pudo mostrar en Finder. Revisa los permisos.	Finderで表示できません。アクセス権を確認してください。
+Mostrar no Finder só existe no macOS.	Reveal in Finder is available only on macOS.	Mostrar en Finder solo está disponible en macOS.	Finderでの表示はmacOSのみ利用できます。
+Tirar esta pasta	Remove this folder	Quitar esta carpeta	このフォルダを一覧から外す
+HD externo: use Escolher pasta… e selecione o disco ou uma pasta dele.	External drive: choose the drive or one of its folders with Choose folder…	Disco externo: usa Elegir carpeta… y selecciona el disco o una de sus carpetas.	外付けドライブ：「フォルダを選択…」からドライブか中のフォルダを選びます。
+Grandes (MiB)	Large files (MiB)	Archivos grandes (MiB)	大容量の基準（MiB）
+Downloads antigos (dias)	Old downloads (days)	Descargas antiguas (días)	古いダウンロード（日数）
+Para caches, escolha ~/Library/Caches. Links e locais protegidos ficam de fora.	For caches, choose ~/Library/Caches. Links and protected locations are excluded.	Para cachés, elige ~/Library/Caches. Se excluyen enlaces y ubicaciones protegidas.	キャッシュは ~/Library/Caches を選択。リンクと保護された場所は対象外です。
+A análise só lê. O Lixo só recebe o que você confirmar.	Analysis only reads. Only confirmed files move to Trash.	El análisis solo lee. Solo se envía a la Papelera lo que confirmes.	解析は読み取り専用です。確認したファイルだけをゴミ箱に移します。
+Local protegido. Escolha uma pasta pessoal ou um disco em /Volumes; não selecione /Volumes inteiro.	Protected location. Choose a personal folder or a drive in /Volumes, not /Volumes itself.	Ubicación protegida. Elige una carpeta personal o un disco en /Volumes, no /Volumes completo.	保護された場所です。個人用フォルダか /Volumes 内のドライブを選び、/Volumes 全体は選ばないでください。
+Não foi possível acessar a pasta: {error}	Could not access the folder: {error}	No se pudo acceder a la carpeta: {error}	フォルダにアクセスできません：{error}
+Para revisar	To review	Para revisar	確認するファイル
+{visited} examinados • {warnings} avisos{}	{visited} examined • {warnings} warnings{}	{visited} examinados • {warnings} avisos{}	確認済み {visited} 件・警告 {warnings} 件{}
+ • resultado parcial	 • partial result	 • resultado parcial	・途中までの結果
+Todos	All	Todos	すべて
+Grandes	Large	Grandes	大容量
+Duplicados	Duplicates	Duplicados	重複
+Caches	Caches	Cachés	キャッシュ
+Selecionar visíveis	Select visible	Seleccionar visibles	表示中の項目を選択
+Limpar seleção	Clear selection	Quitar selección	選択を解除
+Marque só o que pode ir ao Lixo. Pode manter Mesa e Documentos e apagar só Downloads.	Select only the copies you want to move to Trash. You can keep Desktop and Documents copies.	Marca solo las copias que quieras enviar a la Papelera. Puedes conservar las de Escritorio y Documentos.	ゴミ箱に移すコピーだけを選択します。デスクトップや書類のコピーは残せます。
+Analise uma pasta para ver os arquivos aqui.	Analyze a folder to see files here.	Analiza una carpeta para ver los archivos aquí.	フォルダを解析すると、ここにファイルが表示されます。
+Nomes longos mantêm o tipo no fim, por exemplo ferias... .mp4.	Long names keep their extension, for example holiday... .mp4.	Los nombres largos conservan la extensión, por ejemplo vacaciones... .mp4.	長い名前でも拡張子は表示されます（例：旅行... .mp4）。
+Nada vem selecionado. O maior aparece primeiro.	Nothing is selected automatically. Largest files appear first.	Nada se selecciona automáticamente. Los más grandes aparecen primero.	自動選択はしません。容量の大きい順に表示します。
+Selecionados: {}  •  {}	Selected: {}  •  {}	Seleccionados: {}  •  {}	選択中：{} 件・{}
+Um grupo está inteiro marcado. Esse arquivo sai de todos os lugares.	All copies in a group are selected. No copy would remain.	Todas las copias de un grupo están marcadas. No quedaría ninguna.	同じグループのコピーがすべて選択されています。1つも残りません。
+Nenhum arquivo foi examinado. Verifique a pasta escolhida, a conexão do disco e os avisos abaixo.	No files were examined. Check the folder, drive connection and warnings below.	No se examinó ningún archivo. Revisa la carpeta, la conexión del disco y los avisos siguientes.	ファイルを確認できませんでした。フォルダ、ドライブの接続、下の警告を確認してください。
+Análise concluída: nenhum arquivo atende aos critérios atuais. No modo Avançado, você pode ajustar o limite de tamanho.	Analysis complete: no files match the current criteria. Adjust the size limit in Advanced mode.	Análisis terminado: ningún archivo cumple los criterios actuales. Ajusta el tamaño en el modo Avanzado.	解析完了：現在の条件に合うファイルはありません。詳細モードで容量の基準を調整できます。
+Nenhum resultado neste filtro. Selecione Todos para ver os outros arquivos encontrados.	No results in this filter. Select All to see the other files found.	Sin resultados en este filtro. Selecciona Todos para ver los demás archivos encontrados.	このフィルタに結果はありません。「すべて」でほかのファイルを表示できます。
+Mesmo arquivo em outros lugares.\n{}	Same file in other locations.\n{}	Mismo archivo en otras ubicaciones.\n{}	ほかの場所にも同じファイルがあります。\n{}
+Nenhuma duplicata de 1 MiB ou mais nesta análise.	No duplicates of 1 MiB or more in this analysis.	No hay duplicados de 1 MiB o más en este análisis.	この解析では1 MiB以上の重複は見つかりませんでした。
+Mesmo arquivo em {places} lugares	Same file in {places} locations	Mismo archivo en {places} ubicaciones	{places}か所に同じファイル
+{} cada	{} each	{} cada uno	各 {}
+Sugerir o que soltar	Suggest copies to remove	Sugerir copias para quitar	削除するコピーの候補
+Marque as cópias que podem ir ao Lixo. As desmarcadas ficam.	Select copies to move to Trash. Unselected copies stay.	Marca las copias para enviar a la Papelera. Las demás se conservan.	ゴミ箱に移すコピーを選択します。未選択のコピーは残ります。
+Este grupo sairia de todos os lugares.	Every copy in this group would be removed.	Se quitarían todas las copias de este grupo.	このグループのコピーがすべて削除されます。
+Melhor para ficar	Suggested keeper	Sugerida para conservar	残す候補
+A análise foi interrompida inesperadamente. Tente novamente.	Analysis stopped unexpectedly. Please try again.	El análisis se interrumpió inesperadamente. Inténtalo de nuevo.	解析が予期せず中断されました。もう一度お試しください。
+Espaço para escolher\ne revisar arquivos	Space to choose\nand review files	Un espacio para elegir\ny revisar archivos	ファイルを選んで\n確認する場所
+Análise local. Nenhum arquivo é removido durante a análise.	Local analysis. No files are removed while scanning.	Análisis local. No se elimina ningún archivo durante el análisis.	このMac内で解析。解析中にファイルを削除することはありません。
+Iniciante	Simple	Sencillo	シンプル
+Avançado	Advanced	Avanzado	詳細
+Sem nuvem.\nSem pressa.\nVocê no controle.	No cloud.\nNo rush.\nYou are in control.	Sin nube.\nSin prisas.\nTú decides.	クラウド不使用。\n自分のペースで。\n選ぶのはあなたです。
+Análise em andamento…	Analyzing…	Analizando…	解析中…
+{} arquivos examinados	{} files examined	{} archivos examinados	{} 件のファイルを確認済み
+Cancelar análise	Cancel analysis	Cancelar análisis	解析を中止
+Relatórios locais	Local reports	Informes locales	ローカルレポート
+Exportação opcional. Sem nomes ou caminhos por padrão; você revisará o conteúdo antes de salvar.	Export is optional. Names and paths are excluded by default; review before saving.	La exportación es opcional. Sin nombres ni rutas por defecto; revisa antes de guardar.	書き出しは任意です。初期設定では名前とパスを含みません。保存前に確認できます。
+Criar relatório…	Create report…	Crear informe…	レポートを作成…
+Confirmar envio ao Lixo	Confirm moving to Trash	Confirmar envío a la Papelera	ゴミ箱への移動を確認
+Mover {} arquivos ({:.2} MiB) ao Lixo? Não há exclusão permanente. Esvazie o Lixo no Finder só depois de conferir.	Move {} files ({:.2} MiB) to Trash? There is no permanent deletion here. Check Trash in Finder before emptying it.	¿Enviar {} archivos ({:.2} MiB) a la Papelera? Aquí no se eliminan permanentemente. Revisa la Papelera en Finder antes de vaciarla.	{} 件（{:.2} MiB）をゴミ箱に移しますか？完全削除はしません。Finderで確認してからゴミ箱を空にしてください。
+O macOS pode pedir permissão para o Sissy controlar o Finder.	macOS may ask permission for Sissy to control Finder.	macOS puede pedir permiso para que Sissy controle Finder.	macOSがSissyによるFinderの操作許可を求めることがあります。
+Confirmo: mover ao Lixo	Confirm: move to Trash	Confirmar: enviar a la Papelera	確認してゴミ箱に移す
+Item {}: {}	Item {}: {}	Elemento {}: {}	項目 {}：{}
+Movido ao Lixo	Moved to Trash	Enviado a la Papelera	ゴミ箱に移動しました
+Falhou: {e}	Failed: {e}	Falló: {e}	失敗：{e}
+Ações concluídas. Analise novamente antes de outra operação.	Actions complete. Analyze again before another operation.	Acciones terminadas. Vuelve a analizar antes de otra operación.	操作が完了しました。次の操作の前にもう一度解析してください。
+Cancelar operação	Cancel operation	Cancelar operación	操作をキャンセル
+Log opcional	Optional log	Registro opcional	任意のログ
+Será salvo apenas um resumo da análise e resultados das ações. Sem nomes ou caminhos por padrão. O arquivo fica no destino escolhido; nenhuma transmissão é feita.	Only a summary of analysis and actions will be saved. No names or paths by default. The file stays at your chosen destination; nothing is transmitted.	Solo se guardará un resumen del análisis y las acciones. Sin nombres ni rutas por defecto. El archivo queda donde elijas; no se transmite nada.	解析と操作の概要のみを保存します。初期設定では名前とパスを含みません。選んだ場所に保存し、送信はしません。
+Incluir explicitamente os caminhos dos resultados (dados sensíveis)	Include result paths (sensitive data)	Incluir las rutas de los resultados (datos sensibles)	結果のパスを含める（機密情報）
+Criar log local…	Create local log…	Crear registro local…	ローカルログを作成…
+Examinados: {}; candidatos: {}; cancelada: {}; avisos: {}\n	Examined: {}; candidates: {}; cancelled: {}; warnings: {}\n	Examinados: {}; candidatos: {}; cancelado: {}; avisos: {}\n	確認済み：{}、候補：{}、中止：{}、警告：{}\n
+Sem análise atual\n	No current analysis\n	Sin análisis actual\n	解析結果なし\n
+\nAção: {}	\nAction: {}	\nAcción: {}	\n操作：{}
+Log salvo localmente	Log saved locally	Registro guardado localmente	ログをローカルに保存しました
+Falha ao salvar log: {e}	Could not save log: {e}	No se pudo guardar el registro: {e}	ログを保存できません：{e}
+Cancelar log	Cancel log	Cancelar registro	ログをキャンセル
+Cobra	Snake	Serpiente	ヘビ
+A cobra aponta. O bote continua sendo seu.	Sissy points things out. You decide what happens next.	Sissy señala. Tú decides qué hacer después.	Sissyは候補を見つけます。どうするかはあなたが決めます。
+Não dê o bote à toa	Choose carefully	Elige con cuidado	慎重に選びましょう
+Um filme enorme na pasta certa deve ficar. O Sissy só ergue a cabeça para tamanho, download antigo, cache ou mídia. O bote, se houver, é você quem dá.	A large movie in the right folder may be worth keeping. Size, age, cache and media types are only clues. You decide what to remove.	Una película grande puede merecer conservarse. El tamaño, la antigüedad, la caché y el tipo solo son pistas. Tú decides qué quitar.	大きな動画でも必要なものは残しましょう。容量、古さ、キャッシュ、種類は手がかりです。削除するものは自分で選んでください。
+A língua marca o tipo	Keep the extension in view	La extensión siempre visible	拡張子を確認
+Nome comprido aparece como ferias... .mp4. A língua para no tipo do arquivo e não come o .mp4, .zip ou .dmg. A linha de baixo é a pasta. Passe o mouse para ver o caminho inteiro.	Long names keep .mp4, .zip or .dmg visible. The folder appears below. Hover to see the full path.	Los nombres largos mantienen visible .mp4, .zip o .dmg. La carpeta aparece debajo. Pasa el cursor para ver la ruta completa.	長い名前でも .mp4、.zip、.dmg などの拡張子を表示します。下の行はフォルダです。ポインタを重ねるとパス全体が表示されます。
+Mais de um ninho	More than one home	Más de un lugar	複数の場所にあるファイル
+A mesma foto pode estar na Mesa, nos Downloads e em Documentos. Marque só o ninho que pode ir embora. Pode ficar com dois e soltar o terceiro. “Sugerir o que soltar” aponta as cópias mais fáceis, em geral Downloads, e deixa Documentos quieto.	The same photo may be on Desktop, in Downloads and in Documents. Select only the copies you want to remove. Suggestions prefer keeping Documents over Downloads.	La misma foto puede estar en Escritorio, Descargas y Documentos. Marca solo las copias que quieras quitar. Las sugerencias prefieren conservar Documentos antes que Descargas.	同じ写真がデスクトップ、ダウンロード、書類にある場合があります。不要なコピーだけを選びましょう。候補の提案ではダウンロードより書類のコピーを優先して残します。
+Não se enrosque no cache	Take care with caches	Cuidado con la caché	キャッシュの扱いに注意
+Cache de programa aberto volta, ou o programa chia na próxima abertura. Feche o dono daquele cache, olhe de novo, e só então confirme.	An open app may recreate its cache or need it next time. Close the app, review the files, then confirm.	Una app abierta puede recrear la caché o necesitarla después. Cierra la app, revisa los archivos y luego confirma.	使用中のアプリはキャッシュを再作成したり、次回必要としたりします。アプリを終了し、内容を確認してから操作してください。
+O Lixo não é a toca	Review Trash before emptying	Revisa la Papelera antes de vaciarla	空にする前に確認
+Nada é engolido de verdade. A confirmação lista cada arquivo. Abra o Lixo no Finder, confira a presa, e só então esvazie.	The confirmation lists every file. Open Trash in Finder and review its contents before emptying it.	La confirmación muestra cada archivo. Abre la Papelera en Finder y revisa su contenido antes de vaciarla.	確認画面に各ファイルを表示します。Finderでゴミ箱を開き、中身を確認してから空にしてください。
+Toca fechada	Check folder access	Comprueba el acceso	フォルダへのアクセスを確認
+Pasta vazia quase sempre é o macOS sem abrir a toca. Ele pede acesso a Documentos, Mesa e Downloads. É só leitura, neste Mac, sem nuvem.	If no files are examined, check macOS access to Documents, Desktop and Downloads. Analysis only reads files on this Mac, without cloud services.	Si no se examinan archivos, revisa el acceso de macOS a Documentos, Escritorio y Descargas. El análisis solo lee, sin servicios en la nube.	ファイルを確認できない場合は、macOSの書類、デスクトップ、ダウンロードへのアクセス権を確認してください。解析は読み取り専用で、クラウドは使いません。
+Ícones Material Design, licença Apache 2.0.	Material Design icons, Apache 2.0 license.	Iconos Material Design, licencia Apache 2.0.	Material Designアイコン、Apache 2.0ライセンス。
+Local protegido; escolha uma pasta pessoal ou um disco em /Volumes	Protected location; choose a personal folder or a drive in /Volumes	Ubicación protegida; elige una carpeta personal o un disco en /Volumes	保護された場所です。個人用フォルダか /Volumes 内のドライブを選んでください
+Cancelado	Cancelled	Cancelado	中止
+Grande: tamanho acima do limite; pode ser importante.	Large: above the size limit; may be important.	Grande: supera el tamaño límite; puede ser importante.	大容量：基準を超えていますが、大切なファイルかもしれません。
+Download antigo pela modificação; idade não indica inutilidade.	Old download by modification date; age does not mean useless.	Descarga antigua según su modificación; la antigüedad no implica inutilidad.	更新日時が古いダウンロードです。古くても不要とは限りません。
+Cache conhecido; feche o aplicativo associado e revise antes de remover.	Known cache; close its app and review before removing.	Caché conocida; cierra su app y revisa antes de quitarla.	既知のキャッシュです。関連アプリを終了し、確認してから削除してください。
+Vídeo, instalador ou arquivo compactado acima do limite. A extensão é só uma pista.	Video, installer or archive above the size limit. The extension is only a clue.	Vídeo, instalador o comprimido que supera el límite. La extensión solo es una pista.	容量の基準を超えた動画、インストーラ、圧縮ファイルです。拡張子は手がかりにすぎません。
+O mesmo conteúdo está em {places} lugares. Escolha quais cópias vão ao Lixo.	Identical content in {places} locations. Choose which copies move to Trash.	Contenido idéntico en {places} ubicaciones. Elige qué copias enviar a la Papelera.	{places}か所に同じ内容があります。ゴミ箱に移すコピーを選んでください。
+Caminho protegido ou alterado	Protected or changed path	Ruta protegida o modificada	パスが保護されているか変更されています
+Arquivo alterado; analise novamente	File changed; analyze again	Archivo modificado; vuelve a analizar	ファイルが変更されました。もう一度解析してください
+Finder recusou a operação; verifique permissões	Finder refused the operation; check permissions	Finder rechazó la operación; revisa los permisos	Finderが操作を拒否しました。アクセス権を確認してください
+Lixo disponível apenas no macOS	Trash is available only on macOS	La Papelera solo está disponible en macOS	ゴミ箱への移動はmacOSのみ利用できます
+Não foi possível salvar o idioma: {e}	Could not save the language: {e}	No se pudo guardar el idioma: {e}	言語設定を保存できません：{e}
+Ajustes	Settings	Ajustes	設定
+Ajustes…	Settings…	Ajustes…	設定…
+Aparência	Appearance	Apariencia	外観
+Tema	Theme	Tema	テーマ
+Sistema	System	Sistema	システム
+Claro	Light	Claro	ライト
+Escuro	Dark	Oscuro	ダーク
+Tamanho da interface	Interface size	Tamaño de la interfaz	表示サイズ
+As alterações são aplicadas e salvas automaticamente.	Changes are applied and saved automatically.	Los cambios se aplican y guardan automáticamente.	変更はすぐに適用され、自動保存されます。
+Análise	Analysis	Análisis	解析
+Estes limites valem para a próxima análise. Resultados atuais não são alterados.	These limits apply to the next analysis. Current results stay unchanged.	Estos límites se aplican al próximo análisis. Los resultados actuales no cambian.	この基準は次回の解析に適用されます。現在の結果は変わりません。
+Créditos	Credits	Créditos	クレジット
+Restaurar padrões	Restore defaults	Restaurar valores predeterminados	初期設定に戻す
+Não foi possível salvar os ajustes: {e}	Could not save settings: {e}	No se pudieron guardar los ajustes: {e}	設定を保存できません：{e}

@@ -3,12 +3,17 @@ name = "sissy"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.88"
+description = "Organizador local de arquivos para macOS, com revisão humana, temas e quatro idiomas."
+repository = "https://github.com/leonardobluestriker/sissy"
+homepage = "https://github.com/leonardobluestriker/sissy"
 
 [dependencies]
 eframe = { version = "0.31", default-features = false, features = ["default_fonts", "glow", "x11", "wayland"] }
+egui_extras = { version = "0.31", default-features = false, features = ["svg"] }
 rfd = "0.15"
 sha2 = "0.10"
 image = { version = "0.25", default-features = false, features = ["png"] }
+muda = { version = "0.19.3", default-features = false }
 
 [dev-dependencies]
 tempfile = "3"
