@@ -70,3 +70,9 @@ O pacote `dist/Sissy-linux-x86_64-debug.tar.gz` contém build de desenvolvimento
 ### Ícone fornecido pelo usuário
 
 `assets/SISSY_ICON_MAC.icon/` preserva a composição original do Icon Composer e seu PNG, sem alterar o desenho. O PNG agora é embutido no executável como ícone da janela e mostrado no cabeçalho. A composição em camadas, iluminação e fundo definidos no Icon Composer não são reproduzidos pelo egui. O SVG original anterior continua disponível. O script macOS ainda usa o SVG para ICNS; integrar a composição nativa `.icon` exige validação com ferramentas Apple em um Mac.
+
+## Interface revisada
+
+A interface agora segue a referência visual fornecida: cabeçalho verde, marca e mascote, navegação lateral (Iniciante, Avançado, Resultados, Relatórios e Dicas), painéis com bordas e sombras sólidas, botões maiores e detalhes de cada resultado expansíveis. As variantes regular e negrito de Comic Sans enviadas pelo usuário estão em `assets/fonts` e são embutidas no executável; não exigem instalação externa. O contador de progresso informa arquivos examinados, sem porcentagem fictícia. Não há resultados de demonstração embutidos: as capturas usam uma pasta descartável com dois arquivos reais iguais.
+
+As novas capturas estão em `artifacts/sissy-interface-nova.png` e `artifacts/sissy-interface-resultados.png`. No Linux, ações de Finder e Lixo ficam explicitamente desabilitadas. A aparência foi verificada no display virtual Linux; a integração macOS ainda requer um Mac. Os testes do núcleo continuam separados da interface.
