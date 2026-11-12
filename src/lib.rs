@@ -37,9 +37,19 @@ pub struct Options {
     /// Same-size files smaller than this are not hashed.
     pub duplicate_min: u64,
 }
+#[derive(Clone, Debug)]
+pub struct SpaceEntry {
+    pub path: PathBuf,
+    pub size: u64,
+    pub is_dir: bool,
+}
+
 #[derive(Default)]
 pub struct Report {
     pub items: Vec<Item>,
+    /// Largest entries across all examined files, independent of candidate thresholds.
+    pub top_files: Vec<SpaceEntry>,
+    pub top_folders: Vec<SpaceEntry>,
     pub errors: Vec<String>,
     pub visited: usize,
     pub cancelled: bool,
@@ -163,6 +173,7 @@ pub fn scan(options: Options, cancel: Arc<AtomicBool>, progress: impl Fn(usize))
     let selected_roots: HashSet<_> = options.roots.iter().cloned().collect();
     let mut stack = options.roots;
     let mut files = Vec::new();
+    let mut directories = HashMap::<PathBuf, u64>::new();
     while let Some(p) = stack.pop() {
         if cancel.load(Ordering::Relaxed) {
             r.cancelled = true;
@@ -186,6 +197,7 @@ pub fn scan(options: Options, cancel: Arc<AtomicBool>, progress: impl Fn(usize))
                 return Ok(());
             }
             if m.is_dir() {
+                directories.insert(p.clone(), 0);
                 for e in fs::read_dir(p)? {
                     stack.push(e?.path())
                 }
@@ -249,6 +261,34 @@ pub fn scan(options: Options, cancel: Arc<AtomicBool>, progress: impl Fn(usize))
         if let Err(e) = result {
             r.errors.push(format!("{}: {e}", p.display()))
         }
+    }
+    // Aggregate once after traversal so overlapping roots never count a file twice.
+    for file in &files {
+        for parent in file.path.ancestors().skip(1) {
+            if let Some(size) = directories.get_mut(parent) {
+                *size = size.saturating_add(file.size);
+            }
+        }
+    }
+    r.top_files = files
+        .iter()
+        .map(|f| SpaceEntry {
+            path: f.path.clone(),
+            size: f.size,
+            is_dir: false,
+        })
+        .collect();
+    r.top_folders = directories
+        .into_iter()
+        .map(|(path, size)| SpaceEntry {
+            path,
+            size,
+            is_dir: true,
+        })
+        .collect();
+    for entries in [&mut r.top_files, &mut r.top_folders] {
+        entries.sort_by(|a, b| b.size.cmp(&a.size).then(a.path.cmp(&b.path)));
+        entries.truncate(10);
     }
     // Hash only size collisions. Every matching file stays choosable.
     let mut sizes: HashMap<u64, Vec<usize>> = HashMap::new();

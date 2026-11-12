@@ -43,6 +43,7 @@ Baixe o DMG para **Mac com Apple Silicon (M1 e posteriores)**, abra e arraste Si
 ## O que já funciona
 
 - Análise local de pastas pessoais e discos montados em `/Volumes`, selecionados por você.
+- **Top 10 de espaço** nos Resultados, com filtros para pastas, arquivos ou ambos e botão para revelar no Finder. Inclui arquivos pequenos, independentemente dos limites de revisão.
 - Arquivos grandes e duplicatas por conteúdo, com revisão individual antes do envio ao Lixo pelo Finder.
 - Interface em português, inglês, espanhol e japonês.
 - **Sissy → Ajustes…** para idioma, tema claro/escuro/sistema, tamanho da interface e limites da análise.
@@ -168,3 +169,7 @@ Validação desta revisão: 13 testes aprovados (`cargo test --locked --offline`
 O tema escuro adapta cartões, botões, ícones, dicas e confirmações, acompanhando o macOS quando **Sistema** está selecionado. As preferências são gravadas por substituição de arquivo temporário; valores inválidos são ignorados ou limitados a intervalos válidos. Créditos em Ajustes e Sobre o Sissy: **© 2026 STRIKER Code Team**, `github.com/leonardobluestriker` (link clicável em Ajustes).
 
 Validação dos Ajustes: 15 testes aprovados, temas claro/escuro/sistema e acesso pelo menu conferidos no Mac. Aplicativo instalado e DMG arm64 atualizados, com assinatura ad-hoc verificada. Temporários de compilação removidos.
+
+## Top 10 de espaço (0.2.0)
+
+Depois de analisar as pastas escolhidas, abra Resultados para ver o ranking. Cada pasta soma recursivamente os tamanhos lógicos dos arquivos examinados; raízes sobrepostas não contam o mesmo caminho duas vezes. Pastas pai e filha podem aparecer juntas: não some as linhas. O ranking inclui as próprias raízes selecionadas e mostra até dez entradas por filtro. Não representa todo o disco: locais protegidos, links simbólicos e conteúdo sem permissão ficam de fora. Cancelamento ou avisos deixam o ranking parcial. Tamanho lógico pode diferir do espaço físico usado em APFS, arquivos esparsos e hard links. O ranking permite revelar itens no Finder; o envio ao Lixo continua restrito à revisão individual de arquivos.

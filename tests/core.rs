@@ -140,3 +140,55 @@ fn protected_root_reports_warning() {
     assert!(report.items.is_empty());
     assert!(report.errors.iter().any(|e| e.contains("Local protegido")));
 }
+
+#[test]
+fn space_ranking_counts_small_files_and_overlapping_roots_once() {
+    let d = fixture();
+    let nested = d.path().join("nested");
+    fs::create_dir(&nested).unwrap();
+    fs::write(d.path().join("a"), [0; 12]).unwrap();
+    fs::write(nested.join("b"), [1; 7]).unwrap();
+    fs::write(nested.join("c"), [2; 5]).unwrap();
+    std::os::unix::fs::symlink(&nested, d.path().join("link")).unwrap();
+    let r = scan(
+        Options {
+            roots: vec![d.path().into(), nested.clone(), d.path().into()],
+            large: 1000,
+            old_days: 90,
+            duplicate_min: 1000,
+        },
+        Arc::new(AtomicBool::new(false)),
+        |_| {},
+    );
+    assert!(r.items.is_empty());
+    assert_eq!(r.visited, 3);
+    assert_eq!(
+        r.top_files.iter().map(|e| e.size).collect::<Vec<_>>(),
+        vec![12, 7, 5]
+    );
+    assert_eq!(r.top_folders.len(), 2);
+    assert_eq!(r.top_folders[0].path, d.path().canonicalize().unwrap());
+    assert_eq!(r.top_folders[0].size, 24);
+    assert_eq!(r.top_folders[1].size, 12);
+    assert!(r.top_folders.iter().all(|e| e.is_dir));
+    assert!(r.top_files.iter().all(|e| !e.is_dir));
+}
+
+#[test]
+fn space_ranking_limits_and_ties_are_deterministic() {
+    let d = fixture();
+    for i in 0..15 {
+        let dir = d.path().join(format!("{i:02}"));
+        fs::create_dir(&dir).unwrap();
+        fs::write(dir.join("file"), [0; 3]).unwrap();
+    }
+    let r = run(d.path(), false);
+    assert_eq!(r.top_files.len(), 10);
+    assert_eq!(r.top_folders.len(), 10);
+    assert_eq!(r.top_folders[0].size, 45);
+    assert!(r
+        .top_files
+        .windows(2)
+        .all(|pair| pair[0].path < pair[1].path));
+    assert!(run(d.path(), true).top_files.is_empty());
+}

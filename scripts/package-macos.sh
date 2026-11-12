@@ -42,11 +42,11 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleExecutable</key><string>Sissy</string>
 <key>CFBundleIdentifier</key><string>dev.sissy.cleaner</string>
 <key>CFBundleName</key><string>Sissy</string>
-<key>CFBundleVersion</key><string>20261111.3</string>
+<key>CFBundleVersion</key><string>20261112.1</string>
 <key>NSHumanReadableCopyright</key><string>© 2026 STRIKER Code Team</string>
 <key>CFBundleDevelopmentRegion</key><string>pt</string>
 <key>CFBundleLocalizations</key><array><string>pt</string><string>en</string><string>es</string><string>ja</string></array>
-<key>CFBundleShortVersionString</key><string>0.1.0</string>
+<key>CFBundleShortVersionString</key><string>0.2.0</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleIconFile</key><string>Sissy</string>
 <key>LSMinimumSystemVersion</key><string>11.0</string>

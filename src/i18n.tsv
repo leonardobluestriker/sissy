@@ -154,3 +154,11 @@ Estes limites valem para a próxima análise. Resultados atuais não são altera
 Créditos	Credits	Créditos	クレジット
 Restaurar padrões	Restore defaults	Restaurar valores predeterminados	初期設定に戻す
 Não foi possível salvar os ajustes: {e}	Could not save settings: {e}	No se pudieron guardar los ajustes: {e}	設定を保存できません：{e}
+Top 10 de espaço	Top 10 by size	Top 10 por tamaño	サイズ上位10件
+Somente pastas escolhidas. Tamanho lógico; pastas incluem subpastas e podem se sobrepor. Não some as linhas.	Selected folders only. Logical size; folders include subfolders and may overlap. Do not add the rows.	Solo carpetas elegidas. Tamaño lógico; las carpetas incluyen subcarpetas y pueden solaparse. No sume las filas.	選択したフォルダのみ。論理サイズです。サブフォルダを含み、範囲が重複する場合があります。行を合算しないでください。
+Ranking parcial: análise cancelada ou com avisos. Locais protegidos não entram na contagem.	Partial ranking: scan cancelled or has warnings. Protected locations are excluded.	Clasificación parcial: análisis cancelado o con avisos. Se excluyen ubicaciones protegidas.	解析の中止または警告により部分的な順位です。保護された場所は除外されます。
+Pastas e arquivos	Folders and files	Carpetas y archivos	フォルダとファイル
+Pastas	Folders	Carpetas	フォルダ
+Arquivos	Files	Archivos	ファイル
+Pasta	Folder	Carpeta	フォルダ
+Nenhum item analisado nesta categoria.	No scanned items in this category.	No hay elementos analizados en esta categoría.	このカテゴリに解析済みの項目はありません。

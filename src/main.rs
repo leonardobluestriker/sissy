@@ -75,6 +75,7 @@ struct App {
     status: String,
     focus: u8,
     disk: String,
+    space_filter: u8,
 }
 impl App {
     fn persist_preferences(&mut self) {
@@ -987,6 +988,45 @@ impl App {
             selected.remove(&index);
         }
     }
+    fn space_ranking(&mut self, ui: &mut egui::Ui) {
+        let Some(report) = &self.report else {
+            return;
+        };
+        let mut reveal = None;
+        egui::CollapsingHeader::new(sissy::i18n::text("Top 10 de espaço"))
+            .default_open(true).show(ui, |ui| {
+                ui.label(sissy::i18n::text("Somente pastas escolhidas. Tamanho lógico; pastas incluem subpastas e podem se sobrepor. Não some as linhas."));
+                if report.cancelled || !report.errors.is_empty() {
+                    ui.colored_label(muted(), sissy::i18n::text("Ranking parcial: análise cancelada ou com avisos. Locais protegidos não entram na contagem."));
+                }
+                ui.horizontal_wrapped(|ui| {
+                    for (value, label) in [(0, "Pastas e arquivos"), (1, "Pastas"), (2, "Arquivos")] {
+                        ui.selectable_value(&mut self.space_filter, value, sissy::i18n::text(label));
+                    }
+                });
+                let mut entries: Vec<_> = report.top_folders.iter().chain(&report.top_files)
+                    .filter(|entry| match self.space_filter { 1 => entry.is_dir, 2 => !entry.is_dir, _ => true })
+                    .collect();
+                entries.sort_by(|a, b| b.size.cmp(&a.size).then(a.path.cmp(&b.path)));
+                if entries.is_empty() { ui.label(sissy::i18n::text("Nenhum item analisado nesta categoria.")); }
+                for (rank, entry) in entries.into_iter().take(10).enumerate() {
+                    ui.push_id(("space", rank), |ui| {
+                        ui.horizontal_wrapped(|ui| {
+                            ui.strong(format!("{}. {}", rank + 1, mib(entry.size)));
+                            ui.label(sissy::i18n::text(if entry.is_dir { "Pasta" } else { "Arquivo" }));
+                            if finder_button(ui).clicked() { reveal = Some(entry.path.clone()); }
+                        });
+                        let name = fitted_path(ui, &entry.path.display().to_string(), ui.available_width());
+                        ui.label(name).on_hover_text(entry.path.display().to_string());
+                        ui.separator();
+                    });
+                }
+            });
+        if let Some(path) = reveal {
+            self.reveal(&path);
+        }
+    }
+
     fn results(&mut self, ui: &mut egui::Ui, card_h: f32) {
         let count = self.report.as_ref().map_or(0, |r| r.items.len());
         let heavy: u64 = self
@@ -1519,6 +1559,8 @@ impl eframe::App for App {
                     card().show(ui, |ui| {
                         ui.set_width(ui.available_width());
 
+                        self.space_ranking(ui);
+                        ui.add_space(10.);
                         self.results(ui, budget);
                     });
                 } else {
