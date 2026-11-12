@@ -1,3 +1,4 @@
+mod media;
 mod preferences;
 use eframe::egui;
 use preferences::{Preferences, ThemeChoice};
@@ -56,6 +57,8 @@ use std::{
 #[derive(Default)]
 struct App {
     page: usize,
+    settings_open: bool,
+    media: media::MediaCache,
     preferences: Preferences,
     mascot: Option<egui::TextureHandle>,
     roots: Vec<PathBuf>,
@@ -126,6 +129,11 @@ impl App {
             );
             ui.add_space(12.);
             ui.separator();
+            ui.checkbox(&mut self.preferences.simple_sizes, text("Simplificar tamanho"));
+            ui.small(text("Usa GB para arquivos grandes e unidades menores quando necessário. Desativado: MiB."));
+            ui.checkbox(&mut self.preferences.thumbnails, text("Mostrar miniaturas"));
+            ui.small(text("Imagens, vídeos e arquivos compatíveis. Clique na miniatura ou em Prévia para visualizar no Sissy."));
+            ui.separator();
             ui.label(title(text("Análise"), 18.));
             ui.horizontal_wrapped(|ui| {
                 ui.label(text("Grandes (MiB)"));
@@ -156,6 +164,10 @@ impl App {
             );
             ui.small(format!("Sissy {}", env!("CARGO_PKG_VERSION")));
         });
+        SIMPLE_SIZES.store(self.preferences.simple_sizes, Ordering::Relaxed);
+        if self.preferences.simple_sizes != previous.simple_sizes {
+            self.disk = volume_line();
+        }
         set_language(self.preferences.language);
         if language() != previous_language {
             self.disk = volume_line();
@@ -196,6 +208,7 @@ impl App {
             duplicate_min: 1024 * 1024,
         };
         self.report = None;
+        self.media.clear();
         self.selected.clear();
         self.outcomes.clear();
         self.action_paths.clear();
@@ -378,11 +391,7 @@ fn volume_line() -> String {
     }
     let total = cols[1].parse::<u64>().unwrap_or(0).saturating_mul(1024);
     let avail = cols[3].parse::<u64>().unwrap_or(0).saturating_mul(1024);
-    sissy::tf!(
-        "Neste disco: {:.1} GiB livres de {:.1} GiB",
-        avail as f64 / 1_073_741_824.,
-        total as f64 / 1_073_741_824.
-    )
+    sissy::tf!("Neste disco: {} livres de {}", mib(avail), mib(total))
 }
 fn icon_button(
     ui: &mut egui::Ui,
@@ -626,9 +635,17 @@ fn file_row(
     selected: &mut HashSet<usize>,
     reveal: &mut Option<PathBuf>,
     keeper: bool,
+    media: &mut media::MediaCache,
+    thumbnails: bool,
+    status: &mut String,
 ) {
     ui.horizontal_top(|ui| {
         App::toggle(selected, ui, index);
+        if thumbnails && media.thumbnail(ui, &item.path, item.size, item.modified) {
+            if let Err(error) = media::preview(&item.path) {
+                *status = error;
+            }
+        }
         let width = ui.available_width();
         ui.vertical(|ui| {
             ui.set_width(width);
@@ -661,6 +678,14 @@ fn file_row(
                     chip(ui, text("Melhor para ficar"), true);
                 }
                 ui.label(egui::RichText::new(format_when(item.modified)).size(12.));
+                if ui
+                    .add_enabled(cfg!(target_os = "macos"), egui::Button::new(text("Prévia")))
+                    .clicked()
+                {
+                    if let Err(error) = media::preview(&item.path) {
+                        *status = error;
+                    }
+                }
                 if finder_button(ui).clicked() {
                     *reveal = Some(item.path.clone());
                 }
@@ -757,8 +782,9 @@ fn fitted_path(ui: &egui::Ui, text: &str, width: f32) -> String {
     }
     best
 }
+static SIMPLE_SIZES: AtomicBool = AtomicBool::new(true);
 fn mib(size: u64) -> String {
-    format!("{:.1} MiB", size as f64 / 1_048_576.)
+    preferences::format_size(size, SIMPLE_SIZES.load(Ordering::Relaxed))
 }
 fn place_rank(path: &std::path::Path) -> u8 {
     let Ok(home) = std::env::var("HOME") else {
@@ -974,7 +1000,7 @@ impl App {
                 "page-2" => self.go(2),
                 "page-3" => self.go(3),
                 "page-4" | "tips" => self.go(4),
-                "settings" => self.go(5),
+                "settings" => self.settings_open = true,
                 _ => {}
             }
         }
@@ -1014,6 +1040,18 @@ impl App {
                         ui.horizontal_wrapped(|ui| {
                             ui.strong(format!("{}. {}", rank + 1, mib(entry.size)));
                             ui.label(sissy::i18n::text(if entry.is_dir { "Pasta" } else { "Arquivo" }));
+                            if !entry.is_dir {
+                                if self.preferences.thumbnails {
+                                    if let Ok(meta) = std::fs::metadata(&entry.path) {
+                                        if self.media.thumbnail(ui, &entry.path, meta.len(), meta.modified().unwrap_or(std::time::UNIX_EPOCH)) {
+                                            if let Err(error) = media::preview(&entry.path) { self.status = error; }
+                                        }
+                                    }
+                                }
+                                if ui.add_enabled(cfg!(target_os = "macos"), egui::Button::new(text("Prévia"))).clicked() {
+                                    if let Err(error) = media::preview(&entry.path) { self.status = error; }
+                                }
+                            }
                             if finder_button(ui).clicked() { reveal = Some(entry.path.clone()); }
                         });
                         let name = fitted_path(ui, &entry.path.display().to_string(), ui.available_width());
@@ -1303,7 +1341,17 @@ impl App {
                 .corner_radius(10)
                 .inner_margin(8)
                 .show(ui, |ui| {
-                    file_row(ui, item, index, &mut self.selected, reveal, false);
+                    file_row(
+                        ui,
+                        item,
+                        index,
+                        &mut self.selected,
+                        reveal,
+                        false,
+                        &mut self.media,
+                        self.preferences.thumbnails,
+                        &mut self.status,
+                    );
                 });
         }
         for error in &report.errors {
@@ -1391,6 +1439,9 @@ impl App {
                             &mut self.selected,
                             reveal,
                             Some(*index) == keep,
+                            &mut self.media,
+                            self.preferences.thumbnails,
+                            &mut self.status,
                         );
                     }
                 });
@@ -1408,6 +1459,41 @@ impl eframe::App for App {
             ctx.request_repaint_after(std::time::Duration::from_millis(400));
         }
         self.poll_menu();
+        SIMPLE_SIZES.store(self.preferences.simple_sizes, Ordering::Relaxed);
+        self.media.poll(ctx);
+        if !self.preferences.thumbnails {
+            self.media.clear();
+        }
+        if self.settings_open {
+            ctx.show_viewport_immediate(
+                egui::ViewportId::from_hash_of("sissy-settings"),
+                egui::ViewportBuilder::default()
+                    .with_title(text("Ajustes"))
+                    .with_inner_size([540., 700.])
+                    .with_min_inner_size([420., 400.]),
+                |settings_ctx, class| {
+                    if class == egui::ViewportClass::Embedded {
+                        let mut open = self.settings_open;
+                        egui::Window::new(text("Ajustes")).open(&mut open).show(
+                            settings_ctx,
+                            |ui| {
+                                egui::ScrollArea::vertical()
+                                    .show(ui, |ui| self.settings(ui, settings_ctx));
+                            },
+                        );
+                        self.settings_open = open;
+                    } else {
+                        egui::CentralPanel::default().show(settings_ctx, |ui| {
+                            egui::ScrollArea::vertical()
+                                .show(ui, |ui| self.settings(ui, settings_ctx));
+                        });
+                        if settings_ctx.input(|i| i.viewport().close_requested()) {
+                            self.settings_open = false;
+                        }
+                    }
+                },
+            );
+        }
         apply_theme(ctx, self.preferences.theme);
         ctx.set_zoom_factor(self.preferences.scale);
         if let Some(rx) = &self.receiver {
@@ -1470,7 +1556,6 @@ impl eframe::App for App {
             text("Resultados"),
             text("Relatórios"),
             text("Dicas"),
-            text("Ajustes"),
         ];
         if compact {
             egui::TopBottomPanel::top("navigation-tabs").show(ctx, |ui| {
@@ -1592,7 +1677,6 @@ impl eframe::App for App {
                                 });
                             }
                             4 => tips(ui),
-                            5 => self.settings(ui, ctx),
                             _ => {}
                         }
                         if !self.status.is_empty() {
@@ -1606,10 +1690,10 @@ impl eframe::App for App {
         if self.confirm {
             egui::Window::new(sissy::i18n::text("Confirmar envio ao Lixo")).collapsible(false).resizable(true).default_width(560.).show(ctx,|ui|{
                 let items=self.chosen();
-                ui.label(sissy::tf!("Mover {} arquivos ({:.2} MiB) ao Lixo? Não há exclusão permanente. Esvazie o Lixo no Finder só depois de conferir.",items.len(),items.iter().map(|i|i.size).sum::<u64>() as f64/1048576.));
+                ui.label(sissy::tf!("Mover {} arquivos ({}) ao Lixo? Não há exclusão permanente. Esvazie o Lixo no Finder só depois de conferir.",items.len(),mib(items.iter().map(|i|i.size).sum::<u64>())));
                 egui::ScrollArea::vertical().id_salt("confirm-paths").max_height(240.).show(ui,|ui|{
                     for item in &items {
-                        ui.label(format!("{:.2} MiB  {}", item.size as f64/1048576., item.path.display()));
+                        ui.label(format!("{}  {}", mib(item.size), item.path.display()));
                     }
                 });
                 ui.label(sissy::i18n::text("O macOS pode pedir permissão para o Sissy controlar o Finder."));
@@ -1736,6 +1820,7 @@ fn tips(ui: &mut egui::Ui) {
 fn main() -> eframe::Result {
     let preferences = Preferences::load();
     set_language(preferences.language);
+    SIMPLE_SIZES.store(preferences.simple_sizes, Ordering::Relaxed);
     let home = PathBuf::from(std::env::var_os("HOME").unwrap_or_default());
     let roots = ["Downloads", "Documents", "Desktop"]
         .iter()

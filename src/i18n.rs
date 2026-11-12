@@ -215,6 +215,15 @@ pub fn text_for(source: &str, language: Language) -> &str {
         "Arquivos" => ["Files", "Archivos", "ファイル"][index - 1],
         "Pasta" => ["Folder", "Carpeta", "フォルダ"][index - 1],
         "Nenhum item analisado nesta categoria." => ["No scanned items in this category.", "No hay elementos analizados en esta categoría.", "このカテゴリに解析済みの項目はありません。"][index - 1],
+        "Simplificar tamanho" => ["Simplify sizes", "Simplificar tamaños", "サイズ表示を簡略化"][index - 1],
+        "Usa GB para arquivos grandes e unidades menores quando necessário. Desativado: MiB." => ["Uses GB for large files and smaller units when needed. Off: MiB.", "Usa GB para archivos grandes y unidades menores cuando es necesario. Desactivado: MiB.", "大きなファイルはGB、必要に応じて小さい単位を使用。オフ時はMiB。"][index - 1],
+        "Mostrar miniaturas" => ["Show thumbnails", "Mostrar miniaturas", "サムネイルを表示"][index - 1],
+        "Imagens, vídeos e arquivos compatíveis. Clique na miniatura ou em Prévia para visualizar no Sissy." => ["Images, videos and supported files. Click a thumbnail or Preview to view inside Sissy.", "Imágenes, vídeos y archivos compatibles. Haga clic en la miniatura o Vista previa para verlos en Sissy.", "画像、動画、対応ファイル。サムネイルまたはプレビューをクリックするとSissy内に表示します。"][index - 1],
+        "Prévia" => ["Preview", "Vista previa", "プレビュー"][index - 1],
+        "Prévia no Sissy" => ["Preview in Sissy", "Vista previa en Sissy", "Sissy内のプレビュー"][index - 1],
+        "Prévia indisponível. O formato pode não ser compatível ou o arquivo não está acessível." => ["Preview unavailable. The format may be unsupported or the file is inaccessible.", "Vista previa no disponible. El formato puede ser incompatible o el archivo es inaccesible.", "プレビューできません。未対応の形式、またはアクセスできないファイルです。"][index - 1],
+        "Neste disco: {} livres de {}" => ["This disk: {} free of {}", "En este disco: {} libres de {}", "このディスク：空き {} / {}"][index - 1],
+        "Mover {} arquivos ({}) ao Lixo? Não há exclusão permanente. Esvazie o Lixo no Finder só depois de conferir." => ["Move {} files ({}) to Trash? No permanent deletion. Empty Trash in Finder only after checking.", "¿Mover {} archivos ({}) a la Papelera? No hay eliminación permanente. Vacíela en Finder solo después de revisar.", "{}件（{}）をゴミ箱に移動しますか？完全削除はしません。確認後にFinderでゴミ箱を空にしてください。"][index - 1],
         _ => source,
     }
 }
@@ -328,6 +337,18 @@ macro_rules! tf {
         $crate::i18n::Language::English => format!("Could not save settings: {e}" $($args)*),
         $crate::i18n::Language::Spanish => format!("No se pudieron guardar los ajustes: {e}" $($args)*),
         $crate::i18n::Language::Japanese => format!("設定を保存できません：{e}" $($args)*),
+    }};
+    ("Neste disco: {} livres de {}" $($args:tt)*) => { match $crate::i18n::language() {
+        $crate::i18n::Language::Portuguese => format!("Neste disco: {} livres de {}" $($args)*),
+        $crate::i18n::Language::English => format!("This disk: {} free of {}" $($args)*),
+        $crate::i18n::Language::Spanish => format!("En este disco: {} libres de {}" $($args)*),
+        $crate::i18n::Language::Japanese => format!("このディスク：空き {} / {}" $($args)*),
+    }};
+    ("Mover {} arquivos ({}) ao Lixo? Não há exclusão permanente. Esvazie o Lixo no Finder só depois de conferir." $($args:tt)*) => { match $crate::i18n::language() {
+        $crate::i18n::Language::Portuguese => format!("Mover {} arquivos ({}) ao Lixo? Não há exclusão permanente. Esvazie o Lixo no Finder só depois de conferir." $($args)*),
+        $crate::i18n::Language::English => format!("Move {} files ({}) to Trash? No permanent deletion. Empty Trash in Finder only after checking." $($args)*),
+        $crate::i18n::Language::Spanish => format!("¿Mover {} archivos ({}) a la Papelera? No hay eliminación permanente. Vacíela en Finder solo después de revisar." $($args)*),
+        $crate::i18n::Language::Japanese => format!("{}件（{}）をゴミ箱に移動しますか？完全削除はしません。確認後にFinderでゴミ箱を空にしてください。" $($args)*),
     }};
 }
 #[cfg(test)]

@@ -7,6 +7,7 @@ on:
       - 'src/**'
       - 'assets/**'
       - 'Cargo.*'
+      - 'build.rs'
       - 'rust-toolchain.toml'
       - 'scripts/package-macos.sh'
       - '.github/workflows/macos.yml'
@@ -47,7 +48,9 @@ jobs:
           RELEASE_TAG: macos-preview-${{ github.run_number }}-${{ github.run_attempt }}
         run: |
           cat > /tmp/release-notes.md <<'NOTES'
-          Build universal macOS 11+ (Apple Silicon e Intel).
+          Sissy 0.2.0 · Build universal macOS 11+ (Apple Silicon e Intel).
+          Novidades: Top 10 de espaço para pastas/arquivos; Ajustes em janela separada via Sissy → Ajustes…; tamanhos simplificados e miniaturas ativados por padrão; prévias de imagem, vídeo, áudio e documentos compatíveis dentro do Sissy.
+          Ranking limitado às pastas selecionadas, com tamanhos lógicos. Prévia e miniaturas dependem dos formatos/codecs e provedores do macOS.
           Baixe o DMG ou o ZIP contendo Sissy.app. Verifique os hashes em SHA256SUMS.txt.
           Assinatura apenas ad-hoc: sem Developer ID e sem notarização Apple. O Gatekeeper pode bloquear a abertura.
           Build automatizado e validação estrutural não substituem testes manuais da interface, permissões e Lixo no Mac.

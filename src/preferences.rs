@@ -24,6 +24,8 @@ pub struct Preferences {
     pub scale: f32,
     pub large: u64,
     pub days: u64,
+    pub simple_sizes: bool,
+    pub thumbnails: bool,
 }
 impl Default for Preferences {
     fn default() -> Self {
@@ -33,6 +35,8 @@ impl Default for Preferences {
             scale: 1.,
             large: 500,
             days: 90,
+            simple_sizes: true,
+            thumbnails: true,
         }
     }
 }
@@ -62,6 +66,8 @@ impl Preferences {
                 continue;
             };
             match key {
+                "simple_sizes" => prefs.simple_sizes = value != "false",
+                "thumbnails" => prefs.thumbnails = value != "false",
                 "language" => prefs.language = Language::from_code(value),
                 "theme" => {
                     prefs.theme = match value {
@@ -94,12 +100,14 @@ impl Preferences {
     }
     fn encode(&self) -> String {
         format!(
-            "language={}\ntheme={}\nscale={}\nlarge={}\ndays={}\n",
+            "language={}\ntheme={}\nscale={}\nlarge={}\ndays={}\nsimple_sizes={}\nthumbnails={}\n",
             self.language.code(),
             self.theme.code(),
             self.scale,
             self.large,
-            self.days
+            self.days,
+            self.simple_sizes,
+            self.thumbnails
         )
     }
     pub fn save(&self) -> std::io::Result<()> {
@@ -125,6 +133,8 @@ mod tests {
                     scale: 1.2,
                     large: 2048,
                     days: 120,
+                    simple_sizes: false,
+                    thumbnails: false,
                 };
                 assert_eq!(Preferences::parse(&prefs.encode()), prefs);
             }
@@ -140,5 +150,38 @@ mod tests {
         assert_eq!(prefs.scale, 1.);
         assert_eq!(prefs.large, 1);
         assert_eq!(prefs.days, 36_500);
+    }
+}
+
+/// Decimal units match the sizes shown by Finder. Detailed mode retains MiB.
+pub fn format_size(bytes: u64, simple: bool) -> String {
+    if !simple {
+        return format!("{:.1} MiB", bytes as f64 / 1_048_576.);
+    }
+    let (unit, divisor) = if bytes >= 1_000_000_000_000 {
+        ("TB", 1e12)
+    } else if bytes >= 1_000_000_000 {
+        ("GB", 1e9)
+    } else if bytes >= 1_000_000 {
+        ("MB", 1e6)
+    } else if bytes >= 1_000 {
+        ("KB", 1e3)
+    } else {
+        return format!("{bytes} B");
+    };
+    format!("{:.2} {unit}", bytes as f64 / divisor)
+}
+
+#[cfg(test)]
+mod display_tests {
+    use super::*;
+    #[test]
+    fn size_units_and_old_preferences() {
+        assert!(Preferences::parse("language=en").simple_sizes);
+        assert!(Preferences::parse("language=en").thumbnails);
+        assert_eq!(format_size(1_500_000_000, true), "1.50 GB");
+        assert_eq!(format_size(1_000_000, true), "1.00 MB");
+        assert_eq!(format_size(999, true), "999 B");
+        assert_eq!(format_size(1_048_576, false), "1.0 MiB");
     }
 }

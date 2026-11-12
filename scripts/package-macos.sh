@@ -4,6 +4,12 @@ cd "$(dirname "$0")/.."
 [[ $(uname -s) == Darwin ]] || { echo 'Execute em macOS com Xcode Command Line Tools'; exit 1; }
 export MACOSX_DEPLOYMENT_TARGET=11.0
 export CARGO_TARGET_DIR="$(pwd)/target"
+tmp=""
+cleanup() {
+ if [[ -n "$tmp" ]]; then rm -rf "$tmp"; fi
+ cargo clean --target-dir "$CARGO_TARGET_DIR"
+}
+trap cleanup EXIT
 # Use the committed renditions in normal builds, including GitHub Actions.
 # Re-exporting requires the separate Icon Composer app and is an explicit task.
 if [[ "${SISSY_RENDER_ICONS:-0}" == 1 ]]; then
@@ -30,7 +36,6 @@ else
 fi
 # Use the supplied PNG artwork to generate the standard ICNS sizes.
 tmp=$(mktemp -d)
-trap 'rm -rf "$tmp"' EXIT
 sips -s format png "assets/Sissy-composed.png" --out "$tmp/sissy.svg.png" >/dev/null
 mkdir -p "$tmp/Sissy.iconset"
 for size in 16 32 128 256 512; do
@@ -46,7 +51,7 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>CFBundleExecutable</key><string>Sissy</string>
 <key>CFBundleIdentifier</key><string>dev.sissy.cleaner</string>
 <key>CFBundleName</key><string>Sissy</string>
-<key>CFBundleVersion</key><string>20261112.1</string>
+<key>CFBundleVersion</key><string>20261112.2</string>
 <key>NSHumanReadableCopyright</key><string>© 2026 STRIKER Code Team</string>
 <key>CFBundleDevelopmentRegion</key><string>pt</string>
 <key>CFBundleLocalizations</key><array><string>pt</string><string>en</string><string>es</string><string>ja</string></array>
