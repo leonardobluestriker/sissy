@@ -79,7 +79,7 @@ Internet é necessária para obter Rust e dependências durante o build, não pa
 #               ./scripts/package-macos.sh x86_64
 ```
 
-Saída em `dist/<modo>/Sissy.app` e `Sissy-<modo>.dmg`. O script usa Rust e ferramentas Apple para compilar, assinar e empacotar. `scripts/render-icon.py` exporta as aparências da composição em `icon_file/SISSY_ICON_MAC.icon`; a etapa requer o Icon Composer instalado no caminho indicado no script. O PNG composto gera o ICNS de compatibilidade; quando disponível, `actool` compila os recursos nativos. Abra o DMG e arraste Sissy para Aplicativos.
+Saída em `dist/<modo>/Sissy.app` e `Sissy-<modo>.dmg`. O script usa Rust e ferramentas Apple para compilar, assinar e empacotar. `scripts/render-icon.py` exporta as aparências da composição em `icon_file/SISSY_ICON_MAC.icon`; a exportação requer o Icon Composer instalado no caminho indicado no script. Builds normais usam os PNGs já versionados; para reexportar, execute `SISSY_RENDER_ICONS=1 ./scripts/package-macos.sh arm64`. O PNG composto gera o ICNS de compatibilidade; quando disponível, `actool` compila os recursos nativos. Abra o DMG e arraste Sissy para Aplicativos.
 
 Alvo mínimo declarado: macOS 11 (Big Sur). Universal contém arm64 + x86_64; arm64 é para Apple Silicon; x86_64, para Intel ou Rosetta. A entrega local atual foi validada em Apple Silicon. O alvo mínimo e o pacote universal ainda precisam de validação nos demais sistemas; não representam uma garantia de compatibilidade já testada.
 

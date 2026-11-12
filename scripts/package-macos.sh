@@ -4,7 +4,11 @@ cd "$(dirname "$0")/.."
 [[ $(uname -s) == Darwin ]] || { echo 'Execute em macOS com Xcode Command Line Tools'; exit 1; }
 export MACOSX_DEPLOYMENT_TARGET=11.0
 export CARGO_TARGET_DIR="$(pwd)/target"
-python3 scripts/render-icon.py
+# Use the committed renditions in normal builds, including GitHub Actions.
+# Re-exporting requires the separate Icon Composer app and is an explicit task.
+if [[ "${SISSY_RENDER_ICONS:-0}" == 1 ]]; then
+ python3 scripts/render-icon.py
+fi
 mode=${1:-universal}
 case "$mode" in
  universal) targets=(aarch64-apple-darwin x86_64-apple-darwin);;
