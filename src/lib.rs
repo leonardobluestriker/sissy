@@ -1,5 +1,6 @@
 //! Offline scanner. Discovery never mutates files. Symlinks are always excluded.
 pub mod i18n;
+pub mod operations;
 use sha2::{Digest, Sha256};
 use std::{
     collections::{HashMap, HashSet},
@@ -37,15 +38,84 @@ pub struct Options {
     /// Same-size files smaller than this are not hashed.
     pub duplicate_min: u64,
 }
+#[derive(Clone, Debug)]
+pub struct SpaceEntry {
+    pub path: PathBuf,
+    pub size: u64,
+    pub is_dir: bool,
+    pub modified: SystemTime,
+}
+
 #[derive(Default)]
 pub struct Report {
     pub items: Vec<Item>,
+    /// Largest entries across all examined files, independent of candidate thresholds.
+    pub top_files: Vec<SpaceEntry>,
+    pub top_folders: Vec<SpaceEntry>,
+    pub all_files: Vec<SpaceEntry>,
+    pub all_folders: Vec<SpaceEntry>,
+    pub folders: usize,
     pub errors: Vec<String>,
     pub visited: usize,
     pub cancelled: bool,
 }
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ScanPhase {
+    #[default]
+    Walking,
+    Summarizing,
+    Duplicates,
+    Complete,
+    Cancelled,
+}
+#[derive(Clone, Copy, Debug, Default)]
+pub struct ScanProgress {
+    pub phase: ScanPhase,
+    pub folders: usize,
+    pub files: usize,
+    pub hashed: usize,
+    pub hash_total: usize,
+    pub hash_bytes: u64,
+    pub hash_bytes_total: u64,
+}
+impl Report {
+    /// Largest descendants, excluding the folder itself. Independent of candidate limits.
+    pub fn ranking(&self, filter: u8, within: Option<&Path>) -> Vec<&SpaceEntry> {
+        let accept = |e: &&SpaceEntry| {
+            within.is_none_or(|folder| e.path != folder && e.path.starts_with(folder))
+        };
+        let files = self
+            .all_files
+            .iter()
+            .filter(accept)
+            .take(if filter == 1 { 0 } else { 10 });
+        let folders = self
+            .all_folders
+            .iter()
+            .filter(accept)
+            .take(if filter == 2 { 0 } else { 10 });
+        let mut entries: Vec<_> = files.chain(folders).collect();
+        entries.sort_by(|a, b| b.size.cmp(&a.size).then(a.path.cmp(&b.path)));
+        entries.truncate(10);
+        entries
+    }
+}
+/// Native user scope; canonical Windows paths match scanner canonicalization.
+pub fn user_home() -> Option<PathBuf> {
+    #[cfg(windows)]
+    {
+        std::env::var_os("USERPROFILE")
+            .map(PathBuf::from)
+            .map(|p| fs::canonicalize(&p).unwrap_or(p))
+    }
+    #[cfg(not(windows))]
+    {
+        std::env::var_os("HOME").map(PathBuf::from)
+    }
+}
+
 pub fn protected(p: &Path) -> bool {
-    let home = std::env::var_os("HOME").map(PathBuf::from);
+    let home = user_home();
     protected_in(p, home.as_deref())
 }
 
@@ -138,7 +208,7 @@ mod volume_tests {
     }
 }
 
-fn digest(p: &Path, cancel: &AtomicBool) -> io::Result<Vec<u8>> {
+fn digest(p: &Path, cancel: &AtomicBool, mut progress: impl FnMut(u64)) -> io::Result<Vec<u8>> {
     let mut f = File::open(p)?;
     let mut hash = Sha256::new();
     let mut buf = [0; 65536];
@@ -154,15 +224,26 @@ fn digest(p: &Path, cancel: &AtomicBool) -> io::Result<Vec<u8>> {
             break;
         }
         hash.update(&buf[..n]);
+        progress(n as u64);
     }
     Ok(hash.finalize().to_vec())
 }
 pub fn scan(options: Options, cancel: Arc<AtomicBool>, progress: impl Fn(usize)) -> Report {
+    scan_with_progress(options, cancel, |state| progress(state.files))
+}
+pub fn scan_with_progress(
+    options: Options,
+    cancel: Arc<AtomicBool>,
+    progress: impl Fn(ScanProgress),
+) -> Report {
     let mut r = Report::default();
+    let mut state = ScanProgress::default();
+    progress(state);
     let mut seen = HashSet::new();
     let selected_roots: HashSet<_> = options.roots.iter().cloned().collect();
     let mut stack = options.roots;
     let mut files = Vec::new();
+    let mut directories = HashMap::<PathBuf, (u64, SystemTime)>::new();
     while let Some(p) = stack.pop() {
         if cancel.load(Ordering::Relaxed) {
             r.cancelled = true;
@@ -186,12 +267,17 @@ pub fn scan(options: Options, cancel: Arc<AtomicBool>, progress: impl Fn(usize))
                 return Ok(());
             }
             if m.is_dir() {
+                directories.insert(p.clone(), (0, m.modified()?));
+                r.folders += 1;
+                state.folders = r.folders;
+                progress(state);
                 for e in fs::read_dir(p)? {
                     stack.push(e?.path())
                 }
             } else if m.is_file() {
                 r.visited += 1;
-                progress(r.visited);
+                state.files = r.visited;
+                progress(state);
                 let modified = m.modified()?;
                 let mut reasons = Vec::new();
                 let mut tags = Vec::new();
@@ -250,11 +336,54 @@ pub fn scan(options: Options, cancel: Arc<AtomicBool>, progress: impl Fn(usize))
             r.errors.push(format!("{}: {e}", p.display()))
         }
     }
+    state.phase = ScanPhase::Summarizing;
+    progress(state);
+    // Aggregate once after traversal so overlapping roots never count a file twice.
+    for file in &files {
+        for parent in file.path.ancestors().skip(1) {
+            if let Some(size) = directories.get_mut(parent) {
+                size.0 = size.0.saturating_add(file.size);
+            }
+        }
+    }
+    r.all_files = files
+        .iter()
+        .map(|f| SpaceEntry {
+            path: f.path.clone(),
+            size: f.size,
+            is_dir: false,
+            modified: f.modified,
+        })
+        .collect();
+    r.all_folders = directories
+        .into_iter()
+        .map(|(path, (size, modified))| SpaceEntry {
+            path,
+            size,
+            is_dir: true,
+            modified,
+        })
+        .collect();
+    for entries in [&mut r.all_files, &mut r.all_folders] {
+        entries.sort_by(|a, b| b.size.cmp(&a.size).then(a.path.cmp(&b.path)));
+    }
+    r.top_files = r.all_files.iter().take(10).cloned().collect();
+    r.top_folders = r.all_folders.iter().take(10).cloned().collect();
     // Hash only size collisions. Every matching file stays choosable.
     let mut sizes: HashMap<u64, Vec<usize>> = HashMap::new();
     for (i, f) in files.iter().enumerate() {
         sizes.entry(f.size).or_default().push(i)
     }
+    state.phase = ScanPhase::Duplicates;
+    for (size, indices) in &sizes {
+        if *size >= options.duplicate_min && indices.len() > 1 {
+            state.hash_total += indices.len();
+            state.hash_bytes_total = state
+                .hash_bytes_total
+                .saturating_add(size.saturating_mul(indices.len() as u64));
+        }
+    }
+    progress(state);
     for indices in sizes
         .iter()
         .filter(|(size, v)| **size >= options.duplicate_min && v.len() > 1)
@@ -266,11 +395,16 @@ pub fn scan(options: Options, cancel: Arc<AtomicBool>, progress: impl Fn(usize))
                 r.cancelled = true;
                 break;
             }
-            match digest(&files[i].path, &cancel) {
+            match digest(&files[i].path, &cancel, |bytes| {
+                state.hash_bytes = state.hash_bytes.saturating_add(bytes);
+                progress(state);
+            }) {
                 Ok(h) => groups.entry(h).or_default().push(i),
                 Err(e) => r.errors.push(format!("{}: {e}", files[i].path.display())),
             }
+            state.hashed += 1;
         }
+        progress(state);
         for members in groups.into_values() {
             if members.len() < 2 {
                 continue;
@@ -296,6 +430,12 @@ pub fn scan(options: Options, cancel: Arc<AtomicBool>, progress: impl Fn(usize))
         .collect();
     r.items
         .sort_by(|a, b| b.size.cmp(&a.size).then(a.path.cmp(&b.path)));
+    state.phase = if r.cancelled {
+        ScanPhase::Cancelled
+    } else {
+        ScanPhase::Complete
+    };
+    progress(state);
     r
 }
 /// Revalidate immediately before an action; reject path substitution and changed content.

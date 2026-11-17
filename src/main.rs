@@ -1,3 +1,6 @@
+#![cfg_attr(windows, windows_subsystem = "windows")]
+mod action_ui;
+mod media;
 mod preferences;
 use eframe::egui;
 use preferences::{Preferences, ThemeChoice};
@@ -49,13 +52,16 @@ use std::{
     collections::HashSet,
     path::PathBuf,
     sync::{
-        atomic::{AtomicBool, AtomicUsize, Ordering},
-        mpsc, Arc,
+        atomic::{AtomicBool, Ordering},
+        mpsc, Arc, Mutex,
     },
 };
 #[derive(Default)]
 struct App {
     page: usize,
+    settings_open: bool,
+    request_quit: bool,
+    media: media::MediaCache,
     preferences: Preferences,
     mascot: Option<egui::TextureHandle>,
     roots: Vec<PathBuf>,
@@ -65,16 +71,25 @@ struct App {
     report: Option<Report>,
     selected: HashSet<usize>,
     cancel: Arc<AtomicBool>,
-    progress: Arc<AtomicUsize>,
+    progress: Arc<Mutex<ScanProgress>>,
     receiver: Option<mpsc::Receiver<Report>>,
-    confirm: bool,
+    rank_selected: HashSet<PathBuf>,
+    rank_scope: Option<PathBuf>,
+    plan_receiver: Option<mpsc::Receiver<Result<operations::PreparedBatch, String>>>,
+    prepared: Option<operations::PreparedBatch>,
+    pending_action: Option<operations::Action>,
+    operation_receiver: Option<mpsc::Receiver<Vec<operations::Outcome>>>,
+    operation_progress: Arc<Mutex<operations::Progress>>,
+    operation_cancel: Arc<AtomicBool>,
     outcomes: Vec<String>,
+    outcome_summaries: Vec<String>,
     action_paths: Vec<PathBuf>,
     paths_in_log: bool,
     log_confirm: bool,
     status: String,
     focus: u8,
     disk: String,
+    space_filter: u8,
 }
 impl App {
     fn persist_preferences(&mut self) {
@@ -125,6 +140,11 @@ impl App {
             );
             ui.add_space(12.);
             ui.separator();
+            ui.checkbox(&mut self.preferences.simple_sizes, text("Simplificar tamanho"));
+            ui.small(text("Usa GB para arquivos grandes e unidades menores quando necessário. Desativado: MiB."));
+            ui.checkbox(&mut self.preferences.thumbnails, text("Mostrar miniaturas"));
+            ui.small(text("Imagens, vídeos e arquivos compatíveis. Clique na miniatura ou em Prévia para visualizar no Sissy."));
+            ui.separator();
             ui.label(title(text("Análise"), 18.));
             ui.horizontal_wrapped(|ui| {
                 ui.label(text("Grandes (MiB)"));
@@ -155,6 +175,10 @@ impl App {
             );
             ui.small(format!("Sissy {}", env!("CARGO_PKG_VERSION")));
         });
+        SIMPLE_SIZES.store(self.preferences.simple_sizes, Ordering::Relaxed);
+        if self.preferences.simple_sizes != previous.simple_sizes {
+            self.disk = volume_line();
+        }
         set_language(self.preferences.language);
         if language() != previous_language {
             self.disk = volume_line();
@@ -182,10 +206,13 @@ impl App {
             .unwrap_or_default()
     }
     fn start(&mut self) {
+        if self.operation_busy() || self.pending_action.is_some() {
+            return;
+        }
         let (tx, rx) = mpsc::channel();
         self.receiver = Some(rx);
         self.cancel = Arc::new(AtomicBool::new(false));
-        self.progress.store(0, Ordering::Relaxed);
+        *self.progress.lock().unwrap() = ScanProgress::default();
         let c = self.cancel.clone();
         let p = self.progress.clone();
         let o = Options {
@@ -195,12 +222,16 @@ impl App {
             duplicate_min: 1024 * 1024,
         };
         self.report = None;
+        self.media.clear();
         self.selected.clear();
+        self.rank_selected.clear();
+        self.rank_scope = None;
         self.outcomes.clear();
+        self.outcome_summaries.clear();
         self.action_paths.clear();
         std::thread::spawn(move || {
-            let r = scan(o, c, |n| {
-                p.store(n, Ordering::Relaxed);
+            let r = scan_with_progress(o, c, |state| {
+                *p.lock().unwrap() = state;
             });
             let _ = tx.send(r);
         });
@@ -377,11 +408,7 @@ fn volume_line() -> String {
     }
     let total = cols[1].parse::<u64>().unwrap_or(0).saturating_mul(1024);
     let avail = cols[3].parse::<u64>().unwrap_or(0).saturating_mul(1024);
-    sissy::tf!(
-        "Neste disco: {:.1} GiB livres de {:.1} GiB",
-        avail as f64 / 1_073_741_824.,
-        total as f64 / 1_073_741_824.
-    )
+    sissy::tf!("Neste disco: {} livres de {}", mib(avail), mib(total))
 }
 fn icon_button(
     ui: &mut egui::Ui,
@@ -474,7 +501,7 @@ fn install_mac_menu() {
     let hide = PredefinedMenuItem::hide(Some(sissy::i18n::text("Ocultar Sissy")));
     let hide_others = PredefinedMenuItem::hide_others(Some(sissy::i18n::text("Ocultar os outros")));
     let show_all = PredefinedMenuItem::show_all(Some(sissy::i18n::text("Mostrar tudo")));
-    let quit = PredefinedMenuItem::quit(Some(sissy::i18n::text("Encerrar Sissy")));
+    let quit = MenuItem::with_id("quit", text("Encerrar Sissy"), true, key(Code::KeyQ));
     let sep = || PredefinedMenuItem::separator();
     let pick = MenuItem::with_id(
         "pick",
@@ -625,9 +652,17 @@ fn file_row(
     selected: &mut HashSet<usize>,
     reveal: &mut Option<PathBuf>,
     keeper: bool,
+    media: &mut media::MediaCache,
+    thumbnails: bool,
+    status: &mut String,
 ) {
     ui.horizontal_top(|ui| {
         App::toggle(selected, ui, index);
+        if thumbnails && media.thumbnail(ui, &item.path, item.size, item.modified) {
+            if let Err(error) = media::preview(&item.path) {
+                *status = error;
+            }
+        }
         let width = ui.available_width();
         ui.vertical(|ui| {
             ui.set_width(width);
@@ -660,6 +695,14 @@ fn file_row(
                     chip(ui, text("Melhor para ficar"), true);
                 }
                 ui.label(egui::RichText::new(format_when(item.modified)).size(12.));
+                if ui
+                    .add_enabled(cfg!(target_os = "macos"), egui::Button::new(text("Prévia")))
+                    .clicked()
+                {
+                    if let Err(error) = media::preview(&item.path) {
+                        *status = error;
+                    }
+                }
                 if finder_button(ui).clicked() {
                     *reveal = Some(item.path.clone());
                 }
@@ -756,11 +799,12 @@ fn fitted_path(ui: &egui::Ui, text: &str, width: f32) -> String {
     }
     best
 }
+static SIMPLE_SIZES: AtomicBool = AtomicBool::new(true);
 fn mib(size: u64) -> String {
-    format!("{:.1} MiB", size as f64 / 1_048_576.)
+    preferences::format_size(size, SIMPLE_SIZES.load(Ordering::Relaxed))
 }
 fn place_rank(path: &std::path::Path) -> u8 {
-    let Ok(home) = std::env::var("HOME") else {
+    let Some(home) = user_home() else {
         return 1;
     };
     let Ok(rel) = path.strip_prefix(home) else {
@@ -833,7 +877,8 @@ impl App {
     }
     fn folders(&mut self, ui: &mut egui::Ui) {
         let before = (self.large, self.days);
-        let busy = self.receiver.is_some();
+        let busy =
+            self.receiver.is_some() || self.operation_busy() || self.pending_action.is_some();
         ui.add_enabled_ui(!busy, |ui| {
             ui.horizontal_wrapped(|ui| {
                 ui.label(title(
@@ -853,7 +898,7 @@ impl App {
                 for (i, p) in self.roots.iter().enumerate() {
                     let mut label = p.file_name().map(|s| s.to_string_lossy().into_owned())
                         .unwrap_or_else(|| p.display().to_string());
-                    if let Some(home) = std::env::var_os("HOME") {
+                    if let Some(home) = user_home() {
                         if p.parent() == Some(std::path::Path::new(&home)) {
                             label = match label.as_str() {
                                 "Desktop" => text("Mesa").into(), "Documents" => text("Documentos").into(),
@@ -956,6 +1001,7 @@ impl App {
         #[cfg(target_os = "macos")]
         while let Ok(event) = muda::MenuEvent::receiver().try_recv() {
             match event.id.as_ref() {
+                "quit" => self.request_quit = true,
                 "pick" => self.pick_folder(),
                 "analyze" => {
                     if !self.roots.is_empty() && self.receiver.is_none() {
@@ -964,8 +1010,10 @@ impl App {
                 }
                 "export" => self.log_confirm = true,
                 "trash" => {
-                    if !self.chosen().is_empty() && cfg!(target_os = "macos") {
-                        self.confirm = true;
+                    if (!self.chosen().is_empty() || !self.rank_selected.is_empty())
+                        && cfg!(target_os = "macos")
+                    {
+                        self.prepare_selected(operations::Action::Trash);
                     }
                 }
                 "page-0" => self.go(0),
@@ -973,7 +1021,7 @@ impl App {
                 "page-2" => self.go(2),
                 "page-3" => self.go(3),
                 "page-4" | "tips" => self.go(4),
-                "settings" => self.go(5),
+                "settings" => self.settings_open = true,
                 _ => {}
             }
         }
@@ -987,6 +1035,139 @@ impl App {
             selected.remove(&index);
         }
     }
+    fn space_ranking(&mut self, ui: &mut egui::Ui, list_height: f32) {
+        let Some(report) = &self.report else {
+            return;
+        };
+        let mut reveal = None;
+        let busy = self.operation_busy();
+        let mut scope = self.rank_scope.clone();
+        ui.label(title(text("Top 10 de espaço"), 20.));
+        ui.small(text(
+            "Os maiores itens, incluindo subpastas. Pastas podem se sobrepor; não some as linhas.",
+        ));
+        if report.cancelled || !report.errors.is_empty() {
+            ui.colored_label(muted(), text("Ranking parcial: análise cancelada ou com avisos. Locais protegidos não entram na contagem."));
+        }
+        ui.horizontal_wrapped(|ui| {
+            for (value, label) in [
+                (0, "Ambos"),
+                (2, "Apenas arquivos grandes"),
+                (1, "Apenas pastas grandes"),
+            ] {
+                ui.selectable_value(&mut self.space_filter, value, text(label));
+            }
+        });
+        if let Some(folder) = &self.rank_scope {
+            ui.horizontal_wrapped(|ui| {
+                ui.label(fitted_path(
+                    ui,
+                    &folder.display().to_string(),
+                    ui.available_width() * 0.7,
+                ));
+                if ui.button(text("Todas as pastas escolhidas")).clicked() {
+                    scope = None;
+                }
+            });
+        }
+        let entries = report.ranking(self.space_filter, self.rank_scope.as_deref());
+        egui::ScrollArea::vertical()
+            .id_salt("space-ranking-list")
+            .max_height(list_height)
+            .auto_shrink([false, false])
+            .show(ui, |ui| {
+                if entries.is_empty() {
+                    ui.label(text("Nenhum item analisado nesta categoria."));
+                }
+                for (rank, entry) in entries.into_iter().enumerate() {
+                    ui.push_id(("space", &entry.path), |ui| {
+                        ui.horizontal_top(|ui| {
+                            let mut selected = self.rank_selected.contains(&entry.path);
+                            ui.add_enabled_ui(!busy, |ui| {
+                                if ui.checkbox(&mut selected, "").changed() {
+                                    if selected {
+                                        self.rank_selected.insert(entry.path.clone());
+                                    } else {
+                                        self.rank_selected.remove(&entry.path);
+                                    }
+                                    if let Some(index) =
+                                        report.items.iter().position(|item| item.path == entry.path)
+                                    {
+                                        if selected {
+                                            self.selected.insert(index);
+                                        } else {
+                                            self.selected.remove(&index);
+                                        }
+                                    }
+                                }
+                            });
+                            if !entry.is_dir
+                                && self.preferences.thumbnails
+                                && self
+                                    .media
+                                    .thumbnail(ui, &entry.path, entry.size, entry.modified)
+                            {
+                                if let Err(error) = media::preview(&entry.path) {
+                                    self.status = error;
+                                }
+                            }
+                            ui.vertical(|ui| {
+                                ui.set_width(ui.available_width());
+                                ui.strong(format!("{}. {}", rank + 1, mib(entry.size)));
+                                ui.add(
+                                    egui::Label::new(title(
+                                        &fitted_name(ui, &entry.path, ui.available_width()),
+                                        16.,
+                                    ))
+                                    .truncate(),
+                                )
+                                .on_hover_text(entry.path.display().to_string());
+                                ui.small(fitted_path(
+                                    ui,
+                                    &entry.path.display().to_string(),
+                                    ui.available_width(),
+                                ))
+                                .on_hover_text(entry.path.display().to_string());
+                                ui.horizontal_wrapped(|ui| {
+                                    if entry.is_dir {
+                                        if ui.button(text("Ver arquivos")).clicked() {
+                                            scope = Some(entry.path.clone());
+                                            self.space_filter = 2;
+                                        }
+                                    } else if ui
+                                        .add_enabled(
+                                            cfg!(target_os = "macos"),
+                                            egui::Button::new(text("Prévia")),
+                                        )
+                                        .clicked()
+                                    {
+                                        if let Err(error) = media::preview(&entry.path) {
+                                            self.status = error;
+                                        }
+                                    }
+                                    if finder_button(ui).clicked() {
+                                        reveal = Some(entry.path.clone());
+                                    }
+                                });
+                            });
+                        });
+                        ui.separator();
+                    });
+                }
+            });
+        self.rank_scope = scope;
+        ui.horizontal_wrapped(|ui| {
+            ui.label(sissy::tf!("{} marcados", self.rank_selected.len()));
+            if ui.small_button(text("Limpar seleção")).clicked() {
+                self.rank_selected.clear();
+                self.selected.clear();
+            }
+        });
+        if let Some(path) = reveal {
+            self.reveal(&path);
+        }
+    }
+
     fn results(&mut self, ui: &mut egui::Ui, card_h: f32) {
         let count = self.report.as_ref().map_or(0, |r| r.items.len());
         let heavy: u64 = self
@@ -1006,14 +1187,15 @@ impl App {
             let cancelled = self.report.as_ref().is_some_and(|r| r.cancelled);
             ui.label(
                 egui::RichText::new(sissy::tf!(
-                    "{visited} examinados • {warnings} avisos{}",
+                    "{} pastas / {} arquivos • {} avisos{}",
+                    self.report.as_ref().map_or(0, |r| r.folders),
+                    visited,
+                    warnings,
                     if cancelled {
                         sissy::i18n::text(" • resultado parcial")
                     } else {
                         ""
-                    },
-                    visited = visited,
-                    warnings = warnings
+                    }
                 ))
                 .size(13.)
                 .color(muted()),
@@ -1143,6 +1325,7 @@ impl App {
                 .clicked()
                 {
                     self.selected.clear();
+                    self.rank_selected.clear();
                 }
             });
             if self.focus == 2 {
@@ -1154,7 +1337,7 @@ impl App {
                 );
             }
             let used = ui.cursor().min.y - top;
-            let list_h = (card_h - used - 58.).clamp(130., 560.);
+            let list_h = (card_h - used - 140.).clamp(180., 560.);
             egui::ScrollArea::vertical()
                 .id_salt("results")
                 .max_height(list_h)
@@ -1168,7 +1351,7 @@ impl App {
                 });
         } else {
             let used = ui.cursor().min.y - top;
-            let list_h = (card_h - used - 58.).clamp(130., 560.);
+            let list_h = (card_h - used - 140.).clamp(180., 560.);
             ui.allocate_ui(egui::vec2(ui.available_width(), list_h.min(95.)), |ui| {
                 ui.add_space(12.);
                 ui.label(sissy::i18n::text(
@@ -1185,15 +1368,25 @@ impl App {
         if let Some(path) = reveal {
             self.reveal(&path);
         }
+        if let Some(report) = &self.report {
+            for (index, item) in report.items.iter().enumerate() {
+                if self.selected.contains(&index) {
+                    self.rank_selected.insert(item.path.clone());
+                } else {
+                    self.rank_selected.remove(&item.path);
+                }
+            }
+        }
         let chosen = self.chosen();
-        let bytes: u64 = chosen.iter().map(|i| i.size).sum();
+        let operation_items = self.operation_items();
+        let bytes: u64 = operation_items.iter().map(|i| i.size).sum();
         ui.separator();
         if !self.status.is_empty() {
             ui.label(&self.status);
         }
         ui.horizontal_wrapped(|ui| {
             ui.label(title(
-                &sissy::tf!("Selecionados: {}  •  {}", chosen.len(), mib(bytes)),
+                &sissy::tf!("Selecionados: {}  •  {}", operation_items.len(), mib(bytes)),
                 16.,
             ));
             let wipes_a_group = self.report.as_ref().is_some_and(|report| {
@@ -1206,21 +1399,42 @@ impl App {
                     "Um grupo está inteiro marcado. Esse arquivo sai de todos os lugares.",
                 ));
             }
-            ui.add_enabled_ui(!chosen.is_empty() && cfg!(target_os = "macos"), |ui| {
-                if icon_button(
-                    ui,
-                    egui::include_image!("../assets/icons/trash-can-outline.svg"),
-                    sissy::i18n::text("Revisar envio ao Lixo…"),
-                    true,
-                    [250., 36.],
-                    18.,
-                    16.,
+            ui.add_enabled_ui(
+                (!chosen.is_empty() || !self.rank_selected.is_empty())
+                    && !self.operation_busy()
+                    && cfg!(target_os = "macos"),
+                |ui| {
+                    if icon_button(
+                        ui,
+                        egui::include_image!("../assets/icons/trash-can-outline.svg"),
+                        sissy::i18n::text("Revisar envio ao Lixo…"),
+                        true,
+                        [250., 36.],
+                        18.,
+                        16.,
+                    )
+                    .clicked()
+                    {
+                        self.prepare_selected(operations::Action::Trash);
+                    }
+                },
+            );
+            if ui
+                .add_enabled(
+                    (!chosen.is_empty() || !self.rank_selected.is_empty())
+                        && !self.operation_busy()
+                        && cfg!(target_os = "macos"),
+                    egui::Button::new(text("Transferir para outro disco…")),
                 )
                 .clicked()
+            {
+                if let Some(destination) = rfd::FileDialog::new()
+                    .set_directory("/Volumes")
+                    .pick_folder()
                 {
-                    self.confirm = true;
+                    self.prepare_selected(operations::Action::Transfer(destination));
                 }
-            });
+            }
             if icon_button(
                 ui,
                 egui::include_image!("../assets/icons/file-export-outline.svg"),
@@ -1263,7 +1477,17 @@ impl App {
                 .corner_radius(10)
                 .inner_margin(8)
                 .show(ui, |ui| {
-                    file_row(ui, item, index, &mut self.selected, reveal, false);
+                    file_row(
+                        ui,
+                        item,
+                        index,
+                        &mut self.selected,
+                        reveal,
+                        false,
+                        &mut self.media,
+                        self.preferences.thumbnails,
+                        &mut self.status,
+                    );
                 });
         }
         for error in &report.errors {
@@ -1351,6 +1575,9 @@ impl App {
                             &mut self.selected,
                             reveal,
                             Some(*index) == keep,
+                            &mut self.media,
+                            self.preferences.thumbnails,
+                            &mut self.status,
                         );
                     }
                 });
@@ -1368,6 +1595,52 @@ impl eframe::App for App {
             ctx.request_repaint_after(std::time::Duration::from_millis(400));
         }
         self.poll_menu();
+        self.poll_operations();
+        if self.request_quit || ctx.input(|i| i.viewport().close_requested()) {
+            if self.operation_receiver.is_some() {
+                ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+                self.status = text("Aguarde a operação terminar antes de fechar o Sissy.").into();
+            } else if self.request_quit {
+                self.cancel.store(true, Ordering::Relaxed);
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+            self.request_quit = false;
+        }
+        SIMPLE_SIZES.store(self.preferences.simple_sizes, Ordering::Relaxed);
+        self.media.poll(ctx);
+        if !self.preferences.thumbnails {
+            self.media.clear();
+        }
+        if self.settings_open {
+            ctx.show_viewport_immediate(
+                egui::ViewportId::from_hash_of("sissy-settings"),
+                egui::ViewportBuilder::default()
+                    .with_title(text("Ajustes"))
+                    .with_inner_size([540., 700.])
+                    .with_min_inner_size([420., 400.]),
+                |settings_ctx, class| {
+                    if class == egui::ViewportClass::Embedded {
+                        let mut open = self.settings_open;
+                        egui::Window::new(text("Ajustes")).open(&mut open).show(
+                            settings_ctx,
+                            |ui| {
+                                egui::ScrollArea::vertical()
+                                    .show(ui, |ui| self.settings(ui, settings_ctx));
+                            },
+                        );
+                        self.settings_open = open;
+                    } else {
+                        egui::CentralPanel::default().show(settings_ctx, |ui| {
+                            egui::ScrollArea::vertical()
+                                .show(ui, |ui| self.settings(ui, settings_ctx));
+                        });
+                        if settings_ctx.input(|i| i.viewport().close_requested()) {
+                            self.settings_open = false;
+                        }
+                    }
+                },
+            );
+        }
         apply_theme(ctx, self.preferences.theme);
         ctx.set_zoom_factor(self.preferences.scale);
         if let Some(rx) = &self.receiver {
@@ -1375,6 +1648,9 @@ impl eframe::App for App {
                 Ok(r) => {
                     self.report = Some(r);
                     self.receiver = None;
+                    if self.page <= 2 {
+                        self.page = 2;
+                    }
                 }
                 Err(mpsc::TryRecvError::Disconnected) => {
                     self.receiver = None;
@@ -1401,6 +1677,7 @@ impl eframe::App for App {
                         ui.image((icon.id(), egui::vec2(44., 44.)));
                     }
                     ui.label(title("SISSY", 30.));
+                    ui.small("Beta 0.3.0");
                     if !compact {
                         ui.separator();
                         ui.label(text("Espaço para escolher\ne revisar arquivos"));
@@ -1430,7 +1707,6 @@ impl eframe::App for App {
             text("Resultados"),
             text("Relatórios"),
             text("Dicas"),
-            text("Ajustes"),
         ];
         if compact {
             egui::TopBottomPanel::top("navigation-tabs").show(ctx, |ui| {
@@ -1497,8 +1773,21 @@ impl eframe::App for App {
                                 ui.spinner();
                                 ui.label(title(sissy::i18n::text("Análise em andamento…"), 20.));
                             });
-                            ui.label(sissy::tf!("{} arquivos examinados",
-                                self.progress.load(Ordering::Relaxed)));
+                            let progress = *self.progress.lock().unwrap();
+                            ui.label(text(match progress.phase {
+                                ScanPhase::Walking => "Lendo pastas e metadados dos arquivos…",
+                                ScanPhase::Summarizing => "Somando tamanhos e organizando o ranking…",
+                                ScanPhase::Duplicates => "Comparando conteúdo para encontrar duplicatas…",
+                                ScanPhase::Complete => "Análise concluída",
+                                ScanPhase::Cancelled => "Análise cancelada",
+                            }));
+                            ui.label(sissy::tf!("{} pastas / {} arquivos", progress.folders, progress.files));
+                            if progress.phase == ScanPhase::Duplicates {
+                                ui.label(sissy::tf!("{} de {} arquivos comparados • {} de {} lidos", progress.hashed,
+                                    progress.hash_total, mib(progress.hash_bytes), mib(progress.hash_bytes_total)));
+                                if progress.hash_bytes_total > 0 { ui.add(egui::ProgressBar::new(
+                                    (progress.hash_bytes as f64 / progress.hash_bytes_total as f64).min(1.) as f32)); }
+                            }
                             if icon_button(
                                 ui,
                                 egui::include_image!("../assets/icons/close-circle-outline.svg"),
@@ -1515,12 +1804,36 @@ impl eframe::App for App {
                         });
                         ui.add_space(10.);
                     }
-                    let budget = (viewport_height - if self.page < 2 { 240. } else { 0. }).max(260.);
-                    card().show(ui, |ui| {
-                        ui.set_width(ui.available_width());
-
-                        self.results(ui, budget);
-                    });
+                    if self.receiver.is_none() {
+                        let budget = (viewport_height - if self.page < 2 { 220. } else { 0. }).max(400.);
+                        if self.page == 2 && self.report.is_some() && ui.available_width() >= 800. {
+                            let rank_width = (ui.available_width() * 0.36).floor();
+                            let review_width = ui.available_width() - rank_width - ui.spacing().item_spacing.x;
+                            ui.horizontal_top(|ui| {
+                                ui.allocate_ui_with_layout(egui::vec2(rank_width, budget), egui::Layout::top_down(egui::Align::Min), |ui| {
+                                    card().show(ui, |ui| {
+                                        ui.set_width(ui.available_width());
+                                        self.space_ranking(ui, (budget - 220.).clamp(180., 420.));
+                                    });
+                                });
+                                ui.allocate_ui_with_layout(egui::vec2(review_width, budget), egui::Layout::top_down(egui::Align::Min), |ui| {
+                                    card().show(ui, |ui| {
+                                        ui.set_width(ui.available_width());
+                                        self.results(ui, budget);
+                                    });
+                                });
+                            });
+                        } else {
+                            card().show(ui, |ui| {
+                                ui.set_width(ui.available_width());
+                                self.results(ui, budget.max(440.));
+                            });
+                            if self.page == 2 && self.report.is_some() {
+                                ui.add_space(10.);
+                                card().show(ui, |ui| { self.space_ranking(ui, 180.); });
+                            }
+                        }
+                    }
                 } else {
                     egui::ScrollArea::vertical().id_salt(("main", self.page)).show(ui, |ui| {
                         match self.page {
@@ -1550,7 +1863,6 @@ impl eframe::App for App {
                                 });
                             }
                             4 => tips(ui),
-                            5 => self.settings(ui, ctx),
                             _ => {}
                         }
                         if !self.status.is_empty() {
@@ -1561,22 +1873,9 @@ impl eframe::App for App {
                 }
                 });
             });
-        if self.confirm {
-            egui::Window::new(sissy::i18n::text("Confirmar envio ao Lixo")).collapsible(false).resizable(true).default_width(560.).show(ctx,|ui|{
-                let items=self.chosen();
-                ui.label(sissy::tf!("Mover {} arquivos ({:.2} MiB) ao Lixo? Não há exclusão permanente. Esvazie o Lixo no Finder só depois de conferir.",items.len(),items.iter().map(|i|i.size).sum::<u64>() as f64/1048576.));
-                egui::ScrollArea::vertical().id_salt("confirm-paths").max_height(240.).show(ui,|ui|{
-                    for item in &items {
-                        ui.label(format!("{:.2} MiB  {}", item.size as f64/1048576., item.path.display()));
-                    }
-                });
-                ui.label(sissy::i18n::text("O macOS pode pedir permissão para o Sissy controlar o Finder."));
-                if ui.button(sissy::i18n::text("Confirmo: mover ao Lixo")).clicked(){let results=act(&items,true,trash);self.action_paths=results.iter().map(|(p,_)|p.clone()).collect();self.outcomes=results.iter().enumerate().map(|(n,(_,r))|sissy::tf!("Item {}: {}",n+1,match r{Ok(_)=>sissy::i18n::text("Movido ao Lixo").into(),Err(e)=>sissy::tf!("Falhou: {e}", e = e)})).collect();self.status=sissy::i18n::text("Ações concluídas. Analise novamente antes de outra operação.").into();self.selected.clear();self.report=None;self.confirm=false;self.page=3;}
-                if ui.button(sissy::i18n::text("Cancelar operação")).clicked(){self.confirm=false;}
-            });
-        }
+        self.operation_windows(ctx);
         if self.log_confirm {
-            egui::Window::new(sissy::i18n::text("Log opcional")).collapsible(false).show(ctx,|ui|{ui.label(sissy::i18n::text("Será salvo apenas um resumo da análise e resultados das ações. Sem nomes ou caminhos por padrão. O arquivo fica no destino escolhido; nenhuma transmissão é feita."));ui.checkbox(&mut self.paths_in_log,sissy::i18n::text("Incluir explicitamente os caminhos dos resultados (dados sensíveis)"));if ui.button(sissy::i18n::text("Criar log local…")).clicked(){if let Some(p)=rfd::FileDialog::new().set_file_name("sissy-log.txt").save_file(){let mut text=if let Some(r)=&self.report{sissy::tf!("Examinados: {}; candidatos: {}; cancelada: {}; avisos: {}\n",r.visited,r.items.len(),r.cancelled,r.errors.len())}else{sissy::i18n::text("Sem análise atual\n").into()};text.push_str(&self.outcomes.join("\n"));if self.paths_in_log{for p in &self.action_paths{text.push_str(&sissy::tf!("\nAção: {}",p.display()));}if let Some(r)=&self.report{for i in &r.items{text.push_str(&format!("\n{}",i.path.display()));}}}self.status=match std::fs::write(p,text){Ok(_)=>sissy::i18n::text("Log salvo localmente").into(),Err(e)=>sissy::tf!("Falha ao salvar log: {e}", e = e)};}self.log_confirm=false;}if ui.button(sissy::i18n::text("Cancelar log")).clicked(){self.log_confirm=false;}});
+            egui::Window::new(sissy::i18n::text("Log opcional")).collapsible(false).show(ctx,|ui|{ui.label(sissy::i18n::text("Será salvo apenas um resumo da análise e resultados das ações. Sem nomes ou caminhos por padrão. O arquivo fica no destino escolhido; nenhuma transmissão é feita."));ui.checkbox(&mut self.paths_in_log,sissy::i18n::text("Incluir explicitamente os caminhos dos resultados (dados sensíveis)"));if ui.button(sissy::i18n::text("Criar log local…")).clicked(){if let Some(p)=rfd::FileDialog::new().set_file_name("sissy-log.txt").save_file(){let mut text=if let Some(r)=&self.report{sissy::tf!("Examinados: {}; candidatos: {}; cancelada: {}; avisos: {}\n",r.visited,r.items.len(),r.cancelled,r.errors.len())}else{sissy::i18n::text("Sem análise atual\n").into()};text.push_str(&if self.paths_in_log { self.outcomes.join("\n") } else { self.outcome_summaries.join("\n") });if self.paths_in_log{for p in &self.action_paths{text.push_str(&sissy::tf!("\nAção: {}",p.display()));}if let Some(r)=&self.report{for i in &r.items{text.push_str(&format!("\n{}",i.path.display()));}}}self.status=match std::fs::write(p,text){Ok(_)=>sissy::i18n::text("Log salvo localmente").into(),Err(e)=>sissy::tf!("Falha ao salvar log: {e}", e = e)};}self.log_confirm=false;}if ui.button(sissy::i18n::text("Cancelar log")).clicked(){self.log_confirm=false;}});
         }
     }
 }
@@ -1694,7 +1993,8 @@ fn tips(ui: &mut egui::Ui) {
 fn main() -> eframe::Result {
     let preferences = Preferences::load();
     set_language(preferences.language);
-    let home = PathBuf::from(std::env::var_os("HOME").unwrap_or_default());
+    SIMPLE_SIZES.store(preferences.simple_sizes, Ordering::Relaxed);
+    let home = user_home().unwrap_or_default();
     let roots = ["Downloads", "Documents", "Desktop"]
         .iter()
         .map(|d| home.join(d))
@@ -1802,6 +2102,7 @@ fn main() -> eframe::Result {
                 days: preferences.days,
                 preferences,
                 disk: volume_line(),
+                space_filter: 2,
                 ..Default::default()
             }))
         }),

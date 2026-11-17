@@ -154,3 +154,75 @@ Estes limites valem para a próxima análise. Resultados atuais não são altera
 Créditos	Credits	Créditos	クレジット
 Restaurar padrões	Restore defaults	Restaurar valores predeterminados	初期設定に戻す
 Não foi possível salvar os ajustes: {e}	Could not save settings: {e}	No se pudieron guardar los ajustes: {e}	設定を保存できません：{e}
+Top 10 de espaço	Top 10 by size	Top 10 por tamaño	サイズ上位10件
+Somente pastas escolhidas. Tamanho lógico; pastas incluem subpastas e podem se sobrepor. Não some as linhas.	Selected folders only. Logical size; folders include subfolders and may overlap. Do not add the rows.	Solo carpetas elegidas. Tamaño lógico; las carpetas incluyen subcarpetas y pueden solaparse. No sume las filas.	選択したフォルダのみ。論理サイズです。サブフォルダを含み、範囲が重複する場合があります。行を合算しないでください。
+Ranking parcial: análise cancelada ou com avisos. Locais protegidos não entram na contagem.	Partial ranking: scan cancelled or has warnings. Protected locations are excluded.	Clasificación parcial: análisis cancelado o con avisos. Se excluyen ubicaciones protegidas.	解析の中止または警告により部分的な順位です。保護された場所は除外されます。
+Pastas e arquivos	Folders and files	Carpetas y archivos	フォルダとファイル
+Pastas	Folders	Carpetas	フォルダ
+Arquivos	Files	Archivos	ファイル
+Pasta	Folder	Carpeta	フォルダ
+Nenhum item analisado nesta categoria.	No scanned items in this category.	No hay elementos analizados en esta categoría.	このカテゴリに解析済みの項目はありません。
+Simplificar tamanho	Simplify sizes	Simplificar tamaños	サイズ表示を簡略化
+Usa GB para arquivos grandes e unidades menores quando necessário. Desativado: MiB.	Uses GB for large files and smaller units when needed. Off: MiB.	Usa GB para archivos grandes y unidades menores cuando es necesario. Desactivado: MiB.	大きなファイルはGB、必要に応じて小さい単位を使用。オフ時はMiB。
+Mostrar miniaturas	Show thumbnails	Mostrar miniaturas	サムネイルを表示
+Imagens, vídeos e arquivos compatíveis. Clique na miniatura ou em Prévia para visualizar no Sissy.	Images, videos and supported files. Click a thumbnail or Preview to view inside Sissy.	Imágenes, vídeos y archivos compatibles. Haga clic en la miniatura o Vista previa para verlos en Sissy.	画像、動画、対応ファイル。サムネイルまたはプレビューをクリックするとSissy内に表示します。
+Prévia	Preview	Vista previa	プレビュー
+Prévia no Sissy	Preview in Sissy	Vista previa en Sissy	Sissy内のプレビュー
+Prévia indisponível. O formato pode não ser compatível ou o arquivo não está acessível.	Preview unavailable. The format may be unsupported or the file is inaccessible.	Vista previa no disponible. El formato puede ser incompatible o el archivo es inaccesible.	プレビューできません。未対応の形式、またはアクセスできないファイルです。
+Neste disco: {} livres de {}	This disk: {} free of {}	En este disco: {} libres de {}	このディスク：空き {} / {}
+Mover {} arquivos ({}) ao Lixo? Não há exclusão permanente. Esvazie o Lixo no Finder só depois de conferir.	Move {} files ({}) to Trash? No permanent deletion. Empty Trash in Finder only after checking.	¿Mover {} archivos ({}) a la Papelera? No hay eliminación permanente. Vacíela en Finder solo después de revisar.	{}件（{}）をゴミ箱に移動しますか？完全削除はしません。確認後にFinderでゴミ箱を空にしてください。
+Os maiores itens, incluindo subpastas. Pastas podem se sobrepor; não some as linhas.	Largest items, including subfolders. Folder totals may overlap; do not add the rows.	Los elementos más grandes, incluidas subcarpetas. Los totales pueden solaparse; no sume las filas.	サブフォルダ内も含む上位項目。フォルダの合計は重複するため、行を合算しないでください。
+Ambos	Both	Ambos	両方
+Apenas arquivos grandes	Largest files only	Solo archivos más grandes	大きいファイルのみ
+Apenas pastas grandes	Largest folders only	Solo carpetas más grandes	大きいフォルダのみ
+Todas as pastas escolhidas	All selected folders	Todas las carpetas elegidas	選択した全フォルダ
+Ver arquivos	View files	Ver archivos	ファイルを表示
+{} itens marcados no ranking	{} items selected in the ranking	{} elementos marcados en la clasificación	ランキングで{}件を選択
+{} pastas / {} arquivos • {} avisos{}	{} folders / {} files • {} warnings{}	{} carpetas / {} archivos • {} avisos{}	{}フォルダ / {}ファイル・{}件の警告{}
+Transferir para outro disco…	Transfer to another disk…	Transferir a otro disco…	別のディスクへ転送…
+{} pastas / {} arquivos	{} folders / {} files	{} carpetas / {} archivos	{}フォルダ / {}ファイル
+{} de {} arquivos comparados • {} de {} lidos	{} of {} files compared • {} of {} read	{} de {} archivos comparados • {} de {} leídos	{} / {}ファイルを比較・{} / {}を読み取り
+Lendo pastas e metadados dos arquivos…	Reading folders and file metadata…	Leyendo carpetas y metadatos de archivos…	フォルダとファイル情報を読み取り中…
+Somando tamanhos e organizando o ranking…	Adding sizes and organizing the ranking…	Sumando tamaños y organizando la clasificación…	サイズを集計してランキングを作成中…
+Comparando conteúdo para encontrar duplicatas…	Comparing contents to find duplicates…	Comparando contenido para encontrar duplicados…	内容を比較して重複を検索中…
+Análise concluída	Scan complete	Análisis terminado	解析完了
+Análise cancelada	Scan cancelled	Análisis cancelado	解析を中止しました
+Para mover pastas inteiras, conclua uma análise sem avisos primeiro.	Complete a scan without warnings before moving entire folders.	Complete un análisis sin avisos antes de mover carpetas enteras.	フォルダ全体を移動する前に、警告なしで解析を完了してください。
+A preparação foi interrompida. Nenhuma ação foi iniciada.	Preparation was interrupted. No action was started.	Se interrumpió la preparación. No se inició ninguna acción.	準備が中断されました。操作は開始されていません。
+Transferido para:	Transferred to:	Transferido a:	転送先：
+{} de {} itens processados. Analise novamente antes de outra operação.	{} of {} items processed. Scan again before another operation.	{} de {} elementos procesados. Analice de nuevo antes de otra operación.	{} / {}件を処理しました。次の操作前に再解析してください。
+Operação interrompida. Confira os arquivos na origem e no destino antes de continuar.	Operation interrupted. Check the source and destination files before continuing.	Operación interrumpida. Revise los archivos en origen y destino antes de continuar.	操作が中断されました。続行前に移動元と転送先を確認してください。
+Operação em andamento	Operation in progress	Operación en curso	操作中
+Conferindo o conteúdo da seleção…	Checking the selected contents…	Comprobando el contenido de la selección…	選択内容を確認中…
+Revalidando os itens antes de mover…	Revalidating items before moving…	Revalidando elementos antes de mover…	移動前に項目を再確認中…
+Enviando itens ao Lixo…	Moving items to Trash…	Moviendo elementos a la Papelera…	ゴミ箱へ移動中…
+Transferindo para o outro disco…	Transferring to the other disk…	Transfiriendo al otro disco…	別のディスクへ転送中…
+Conferindo os arquivos no destino…	Checking files at the destination…	Comprobando los archivos en el destino…	転送先のファイルを確認中…
+Finalizando a operação…	Finishing the operation…	Finalizando la operación…	操作を完了中…
+{} de {} itens processados	{} of {} items processed	{} de {} elementos procesados	{} / {}件を処理
+Cancelar preparação	Cancel preparation	Cancelar preparación	準備を中止
+Aguardando o item atual terminar. Os próximos não serão movidos.	Waiting for the current item to finish. Remaining items will not be moved.	Esperando a que termine el elemento actual. Los siguientes no se moverán.	現在の項目の完了を待機中です。残りの項目は移動しません。
+Interromper após o item atual	Stop after the current item	Detener después del elemento actual	現在の項目が完了したら停止
+Revisar operação	Review operation	Revisar operación	操作内容の確認
+Enviar seleção ao Lixo	Move selection to Trash	Mover selección a la Papelera	選択項目をゴミ箱へ移動
+Transferir seleção para outro disco	Transfer selection to another disk	Transferir selección a otro disco	選択項目を別のディスクへ転送
+{} itens selecionados • {} pastas / {} arquivos • {}	{} selected items • {} folders / {} files • {}	{} elementos seleccionados • {} carpetas / {} archivos • {}	{}件を選択・{}フォルダ / {}ファイル・{}
+Pastas selecionadas incluem todo o conteúdo listado abaixo. Seleções de pastas pai e filha são unificadas.	Selected folders include all their contents. Parent and child folder selections are combined.	Las carpetas seleccionadas incluyen todo su contenido. Las selecciones de carpetas padre e hija se unifican.	選択したフォルダの全内容が含まれます。親と子の選択は統合されます。
+Destino:	Destination:	Destino:	転送先：
+Após a transferência, os itens deixam a origem. Nomes repetidos recebem numeração; nada é substituído.	After transfer, items leave the source. Duplicate names are numbered; nothing is replaced.	Tras la transferencia, los elementos dejan el origen. Los nombres repetidos se numeran; nada se sustituye.	転送後、移動元から項目がなくなります。同名の項目は番号を追加し、置換しません。
+Se a pasta de transferência já existir, será criada a próxima pasta numerada.	If the transfer folder exists, the next numbered folder will be created.	Si la carpeta de transferencia ya existe, se creará la siguiente carpeta numerada.	転送フォルダが既存の場合、次の番号のフォルダを作成します。
+Confirmo: transferir	Confirm: transfer	Confirmo: transferir	転送を確定
+Não foi possível reservar um nome para a transferência.	Could not reserve a transfer folder name.	No se pudo reservar un nombre para la transferencia.	転送フォルダ名を確保できませんでした。
+Local protegido para operações.	Location protected from file operations.	Ubicación protegida para operaciones.	操作が保護された場所です。
+A pasta contém links, locais protegidos ou outro volume. Escolha os arquivos diretamente.	The folder contains links, protected locations or another volume. Select the files directly.	La carpeta contiene enlaces, ubicaciones protegidas u otro volumen. Elija los archivos directamente.	リンク、保護された場所、別ボリュームが含まれています。ファイルを直接選択してください。
+Item alterado; analise novamente antes de continuar.	Item changed; scan again before continuing.	Elemento modificado; analice de nuevo antes de continuar.	項目が変更されています。続行前に再解析してください。
+Escolha uma pasta em outro disco ou partição montado em /Volumes.	Choose a folder on another disk or partition mounted in /Volumes.	Elija una carpeta en otro disco o partición montado en /Volumes.	/Volumesにマウントされた別のディスクまたはパーティションのフォルダを選択してください。
+O destino precisa estar em outro disco ou partição.	The destination must be on another disk or partition.	El destino debe estar en otro disco o partición.	別のディスクまたはパーティションを選択してください。
+Não foi possível conferir o espaço livre do destino.	Could not check available destination space.	No se pudo comprobar el espacio libre del destino.	転送先の空き容量を確認できませんでした。
+Espaço livre insuficiente no destino.	Not enough free space at the destination.	Espacio libre insuficiente en el destino.	転送先の空き容量が不足しています。
+Confira origem e destino: a verificação da transferência encontrou diferenças.	Check source and destination: transfer verification found differences.	Revise origen y destino: la verificación encontró diferencias.	転送確認で差異が見つかりました。移動元と転送先を確認してください。
+Aguarde a operação terminar antes de fechar o Sissy.	Wait for the operation to finish before closing Sissy.	Espere a que termine la operación antes de cerrar Sissy.	操作が完了するまでSissyを閉じないでください。
+Concluído	Completed	Completado	完了
+Falhou	Failed	Falló	失敗
+{} marcados	{} selected	{} marcados	{}件を選択
+Pastas selecionadas incluem todas as subpastas e arquivos. Seleções de pastas pai e filha são unificadas.	Selected folders include all subfolders and files. Parent and child folder selections are combined.	Las carpetas seleccionadas incluyen todas las subcarpetas y archivos. Las selecciones de carpetas padre e hija se unifican.	選択したフォルダの全サブフォルダとファイルが含まれます。親と子の選択は統合されます。

@@ -43,6 +43,7 @@ Baixe o DMG para **Mac com Apple Silicon (M1 e posteriores)**, abra e arraste Si
 ## O que já funciona
 
 - Análise local de pastas pessoais e discos montados em `/Volumes`, selecionados por você.
+- **Top 10 de espaço** nos Resultados, com filtros para pastas, arquivos ou ambos e botão para revelar no Finder. Inclui arquivos pequenos, independentemente dos limites de revisão.
 - Arquivos grandes e duplicatas por conteúdo, com revisão individual antes do envio ao Lixo pelo Finder.
 - Interface em português, inglês, espanhol e japonês.
 - **Sissy → Ajustes…** para idioma, tema claro/escuro/sistema, tamanho da interface e limites da análise.
@@ -50,7 +51,7 @@ Baixe o DMG para **Mac com Apple Silicon (M1 e posteriores)**, abra e arraste Si
 
 Não há conta, telemetria ou servidor remoto no aplicativo. A análise só lê os arquivos; mover ao Lixo exige sua confirmação. Tamanho e idade são pistas para revisão, não uma prova de que um arquivo é inútil.
 
-A versão atual foi compilada e conferida em um Mac Apple Silicon, incluindo leitura de um HD externo e troca de temas. **15 testes automatizados passaram.** O envio ao Lixo em HD externo físico e a compatibilidade com outros Macs ainda precisam de mais testes. A distribuição usa assinatura local ad-hoc, sem notarização Apple.
+A versão atual foi compilada e conferida em um Mac Apple Silicon, incluindo leitura de um HD externo e troca de temas. **19 testes automatizados passaram.** O envio ao Lixo em HD externo físico e a compatibilidade com outros Macs ainda precisam de mais testes. A distribuição usa assinatura local ad-hoc, sem notarização Apple.
 
 ## Quem faz
 
@@ -78,7 +79,7 @@ Internet é necessária para obter Rust e dependências durante o build, não pa
 #               ./scripts/package-macos.sh x86_64
 ```
 
-Saída em `dist/<modo>/Sissy.app` e `Sissy-<modo>.dmg`. O script usa Rust e ferramentas Apple para compilar, assinar e empacotar. `scripts/render-icon.py` exporta as aparências da composição em `icon_file/SISSY_ICON_MAC.icon`; a etapa requer o Icon Composer instalado no caminho indicado no script. O PNG composto gera o ICNS de compatibilidade; quando disponível, `actool` compila os recursos nativos. Abra o DMG e arraste Sissy para Aplicativos.
+Saída em `dist/<modo>/Sissy.app` e `Sissy-<modo>.dmg`. Ao terminar (inclusive em caso de falha), o script limpa `target/` e os temporários de empacotamento; os pacotes finais são preservados. O script usa Rust e ferramentas Apple para compilar, assinar e empacotar. `scripts/render-icon.py` exporta as aparências da composição em `icon_file/SISSY_ICON_MAC.icon`; a exportação requer o Icon Composer instalado no caminho indicado no script. Builds normais usam os PNGs já versionados; para reexportar, execute `SISSY_RENDER_ICONS=1 ./scripts/package-macos.sh arm64`. O PNG composto gera o ICNS de compatibilidade; quando disponível, `actool` compila os recursos nativos. Abra o DMG e arraste Sissy para Aplicativos.
 
 Alvo mínimo declarado: macOS 11 (Big Sur). Universal contém arm64 + x86_64; arm64 é para Apple Silicon; x86_64, para Intel ou Rosetta. A entrega local atual foi validada em Apple Silicon. O alvo mínimo e o pacote universal ainda precisam de validação nos demais sistemas; não representam uma garantia de compatibilidade já testada.
 
@@ -100,7 +101,7 @@ Resultados das operações são registrados na sessão, por item numerado; falha
 - Testes cobrem conteúdo igual/diferente com mesmo tamanho, raízes sobrepostas, exclusão de symlinks e sistema, cancelamento prévio, arquivo alterado, confirmação e falha parcial injetada. Testes de Finder real não foram executados no Linux. Use uma pasta descartável no Mac para verificar confirmar/cancelar, Lixo, restauração, permissões recusadas e falhas entre itens.
 - Antes de mover, revalida caminho, tamanho, data e conteúdo da cópia preservada. Isso reduz, mas não elimina, corridas entre verificação e ação do Finder. Não use em árvores modificadas simultaneamente ou sob controle de terceiros. SHA-256 não é comparação byte a byte; colisões são teoricamente possíveis. Hard links não são deduplicados por inode. Arquivos podem mudar durante a análise; resultados exigem revisão humana.
 - Não há cliente HTTP ou endpoints no código do app. Audite `cargo tree` e o código; execute com a rede desligada e monitore o processo no macOS (firewall/instrumentação de rede) para verificar ausência de tráfego. Dependências gráficas e ferramentas do sistema também exigem auditoria para uma garantia formal. Abrir arquivos aciona seus aplicativos associados, que podem ter seu próprio comportamento de rede.
-- A interface simples e a avançada compartilham os resultados; a avançada acrescenta os avisos. Não há pré-visualização de conteúdo, seleção de grupo, preferências persistentes nem garantias de acessibilidade com VoiceOver. Revise contraste, teclado e leitor de tela no Mac antes de distribuição ampla. Comic Sans é carregada quando instalada; caso contrário usa fonte proporcional incluída.
+- A interface simples e a avançada compartilham os resultados; a avançada acrescenta os avisos. Há miniaturas, prévias internas e preferências persistentes. Não há garantias de acessibilidade com VoiceOver. Revise contraste, teclado e leitor de tela no Mac antes de distribuição ampla. Comic Sans é carregada quando instalada; caso contrário usa fonte proporcional incluída.
 
 ## Estrutura
 
@@ -163,8 +164,43 @@ Validação desta revisão: 13 testes aprovados (`cargo test --locked --offline`
 
 ### Ajustes e créditos
 
-**Sissy → Ajustes…** (`⌘,`) e a navegação do aplicativo abrem uma tela única para idioma, tema (sistema, claro ou escuro), tamanho da interface (90% a 130%) e limites de tamanho/idade usados na próxima análise. As alterações são imediatas e salvas automaticamente. Restaurar padrões preserva o idioma escolhido e redefine aparência e limites. Os mesmos limites continuam disponíveis no modo avançado.
+**Sissy → Ajustes…** (`⌘,`) abre uma janela separada, sem item na navegação principal, para idioma, tema (sistema, claro ou escuro), tamanho da interface (90% a 130%) e limites de tamanho/idade usados na próxima análise. As alterações são imediatas e salvas automaticamente. Restaurar padrões preserva o idioma escolhido e redefine aparência e limites. Os mesmos limites continuam disponíveis no modo avançado.
 
 O tema escuro adapta cartões, botões, ícones, dicas e confirmações, acompanhando o macOS quando **Sistema** está selecionado. As preferências são gravadas por substituição de arquivo temporário; valores inválidos são ignorados ou limitados a intervalos válidos. Créditos em Ajustes e Sobre o Sissy: **© 2026 STRIKER Code Team**, `github.com/leonardobluestriker` (link clicável em Ajustes).
 
 Validação dos Ajustes: 15 testes aprovados, temas claro/escuro/sistema e acesso pelo menu conferidos no Mac. Aplicativo instalado e DMG arm64 atualizados, com assinatura ad-hoc verificada. Temporários de compilação removidos.
+
+## Top 10 de espaço (0.2.0)
+
+Depois de analisar as pastas escolhidas, abra Resultados para ver o ranking. Cada pasta soma recursivamente os tamanhos lógicos dos arquivos examinados; raízes sobrepostas não contam o mesmo caminho duas vezes. Pastas pai e filha podem aparecer juntas: não some as linhas. O ranking inclui as próprias raízes selecionadas e mostra até dez entradas por filtro. Não representa todo o disco: locais protegidos, links simbólicos e conteúdo sem permissão ficam de fora. Cancelamento ou avisos deixam o ranking parcial. Tamanho lógico pode diferir do espaço físico usado em APFS, arquivos esparsos e hard links. O ranking permite revelar itens no Finder; o envio ao Lixo continua restrito à revisão individual de arquivos.
+
+## Miniaturas, prévias internas e tamanhos (0.2.0)
+
+- **Ajustes** ficam em uma janela separada, acessível por **Sissy → Ajustes…** ou `⌘,`, sem aba ou botão na navegação principal.
+- **Simplificar tamanho** vem ativado: unidades decimais como no Finder (GB a partir de 1 bilhão de bytes, MB/KB/B para menores; TB quando necessário). Ao desativar, as listas voltam a MiB. A preferência vale para ranking, revisão, totais, confirmação do Lixo e espaço do disco. Os limites de análise continuam explicitamente em MiB.
+- **Mostrar miniaturas** vem ativado para os arquivos do ranking e da revisão. A geração nativa é assíncrona, com fila e cache de memória limitados; formatos sem miniatura usam o ícone do sistema ou a extensão. O macOS controla seus próprios caches de Quick Look; Sissy não exporta miniaturas para arquivos.
+- Clique na miniatura ou em **Prévia** para abrir uma janela do próprio Sissy. Imagens usam um visualizador com redimensionamento; vídeos e áudios usam AVPlayer/AVKit com controles e reprodução iniciada pela pessoa. Fechar ou trocar a prévia interrompe a reprodução. Outros documentos usam Quick Look incorporado quando há suporte. Sissy não abre QuickTime, Preview ou Music para essas ações. Os controles e mensagens nativos seguem o idioma do macOS.
+- A compatibilidade depende dos formatos, codecs e provedores disponíveis no macOS. Arquivos ausentes, protegidos ou substituídos por links simbólicos são recusados; formatos incompatíveis podem exibir um aviso ou somente um ícone. Imagens grandes são reduzidas na prévia (máximo de 4096 pixels), sem alterar o original.
+
+Validação: 19 testes Rust, compilação Objective-C sem avisos com `-Wall -Wextra` e conferência da janela separada de Ajustes, miniaturas de imagem/vídeo, exibição em GB e prévias internas de PNG, MP4/H.264 e WAV no Mac Apple Silicon. Não representa validação de todos os formatos, provedores ou Macs.
+
+## Beta 0.3.0 — arquivos dentro das pastas e transferências
+
+Preparação local para o lançamento previsto em 13 de novembro de 2026. O pacote de desenvolvimento identifica-se como `0.3.0-beta.1` (build `20261112.3`).
+
+- O Top 10 começa em **Apenas arquivos grandes**, com os arquivos mais pesados encontrados recursivamente nas pastas escolhidas. **Ambos** e **Apenas pastas grandes** alternam as categorias; "grandes" significa os maiores itens do escopo, independentemente do limite configurado para a lista de revisão.
+- **Ver arquivos** em uma pasta mostra seus dez arquivos mais pesados, incluindo subpastas, sem repetir a análise. **Todas as pastas escolhidas** volta ao escopo original. Os rankings consultam o inventário completo da análise, inclusive quando um arquivo não aparecia entre os dez maiores globais.
+- Ranking e revisão têm seleções sincronizadas. É possível escolher arquivos ou pastas para enviar ao Lixo ou transferir a outro volume. A confirmação mostra a contagem de itens selecionados, o total real de pastas/arquivos incluídos, os bytes lógicos e os caminhos. Seleções sobrepostas são unificadas.
+- **Transferir para outro disco…** pede uma pasta em outro disco/partição montado em `/Volumes`. O destino precisa ter outro identificador de filesystem; copiar para outra pasta no mesmo volume não é uma transferência de disco. Antes da confirmação, Sissy verifica o volume e o espaço livre. A pasta de transferência só é criada após confirmar.
+- O destino recebe **Transferências do Sissy**; se já existir, Sissy cria **Transferências do Sissy no. 2**, depois **no. 3**, etc. A reserva é feita com criação exclusiva da pasta. Arquivos de mesmo nome no lote recebem **`nome_1.ext`**, **`nome_2.ext`**; pastas de origem com nomes iguais também recebem `_1`. Nada é substituído.
+- A transferência usa `FileManager.moveItem` do macOS, que copia e remove a origem ao atravessar volumes, preservando o tratamento de metadados pelo sistema. Ao terminar, Sissy confere a ausência da origem e a estrutura/tamanho dos arquivos no destino; isso não equivale a uma verificação criptográfica de todo o conteúdo. Os caminhos reais de destino aparecem nos resultados da sessão. Em caso de falha parcial, confira os dois locais; Sissy preserva o conteúdo que já estiver no destino.
+- Antes de agir, Sissy revalida um inventário da seleção (tipo, tamanho, modificação e identidade dos arquivos). Pastas inteiras exigem análise concluída sem avisos e não podem conter links, locais protegidos ou outros volumes internos. Essas verificações reduzem, mas não eliminam, corridas em árvores modificadas por outros processos. HOME, raízes de volumes e o Lixo não são alvos permitidos.
+- As operações rodam fora da interface. É possível cancelar a preparação ou interromper depois do item atual; uma movimentação nativa em curso termina antes de parar. O fechamento normal do Sissy fica bloqueado enquanto uma operação está em andamento. O Lixo continua sendo administrado pelo Finder, sem alternativa de exclusão permanente.
+- O progresso separa **pastas / arquivos** e informa as etapas: leitura de metadados, soma e ranking, comparação de conteúdo e finalização. Na comparação, contagem e bytes se referem ao conjunto real de arquivos que precisa de hash. Não há porcentagem fictícia da travessia.
+- Em janelas largas, **Para revisar** ocupa a coluna maior, ao lado do ranking com rolagem própria. Em janelas estreitas, a revisão vem primeiro. Logs exportados sem inclusão de caminhos mantêm apenas estados e contagens; detalhes com caminhos exigem a opção explícita.
+
+Validação da Beta: 25 testes Rust regulares aprovados, mais 1 teste nativo adicional em um volume HFS+ virtual descartável. Esse teste transferiu arquivos e uma pasta com nome acentuado de APFS para HFS+, confirmou os conteúdos, a numeração de pastas e arquivos e a preservação de um destino anterior. A interface foi conferida no Mac Apple Silicon, incluindo filtros, detalhamento de subpastas, seleção e cancelamento da confirmação. Não houve teste destrutivo com arquivos pessoais nem validação de um HD físico nesta etapa.
+
+Para repetir o teste nativo, monte um volume descartável cujo nome comece com `SissyBetaTest` e execute `SISSY_TEST_VOLUME=/Volumes/SissyBetaTest… cargo test --locked --test operations native_cross_volume_transfer_preserves_payload_and_numbers_conflicts -- --ignored`. Nunca use um disco com dados pessoais para esse teste.
+
+Para preservar pacotes anteriores, é possível escolher a saída: `SISSY_DIST_DIR=dist/beta-0.3.0-arm64 ./scripts/package-macos.sh arm64`. O script limpa `target/` e os temporários ao terminar; preserve somente pacotes finais solicitados.

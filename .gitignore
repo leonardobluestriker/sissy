@@ -6,3 +6,6 @@
 # macOS metadata and local UI fixtures
 .DS_Store
 /sissy-ui-demo
+
+# Disposable fixtures used for local checks
+/.test-home
