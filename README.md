@@ -1,7 +1,7 @@
 # Sissy
 
 <p align="center">
-  <strong>Uma cobrinha para ajudar a organizar o Mac. Quem decide o que fica é você.</strong><br>
+  <strong>Uma cobrinha para ajudar a organizar seus arquivos no Mac e no Windows. Quem decide o que fica é você.</strong><br>
   Rust + egui · análise local · português, inglês, espanhol e japonês
 </p>
 
@@ -11,19 +11,30 @@
   <a href="#desenvolver-e-testar">Mexer no código</a>
 </p>
 
-O **Sissy é um organizador de arquivos para macOS em construção**, com uma cobra verde, cores fortes e uma proposta simples: ajudar você a encontrar arquivos grandes e cópias repetidas, entender o que está ocupando espaço e escolher com calma o que pode ir ao Lixo. Também analisa pastas de HDs externos escolhidas por você.
+O **Sissy é um organizador de arquivos para Mac e Windows, ainda em construção**. Uma cobra verde, cores fortes e uma missão bem pé no chão: ajudar você a encontrar arquivos grandes e cópias repetidas, entender o que está ocupando espaço e decidir com calma o que merece ficar.
+
+**Agora uma novidade venenosa: a serpente está nas janelas! Sissy também pode ser executado no Windows!** 🐍🪟 A primeira compilação para Windows x64 já está disponível como **experimental**. O Mac continua com a integração mais completa; no Windows, a cobrinha começa pela análise dos arquivos.
+
+No **macOS**, há revisão antes do envio ao Lixo pelo Finder, análise de pastas de discos externos e, na beta, transferência para outro volume. No **Windows**, esta primeira versão analisa pastas dentro do perfil do usuário; Lixo, transferências, prévias e miniaturas nativas, revelar arquivos e o menu de Ajustes ainda não estão disponíveis. Discos externos Windows também ficam para uma próxima rodada. O executável foi compilado no Mac e **a execução em Windows ainda precisa de validação real**.
 
 **Foi vibe-codado, sim. E quero mais gente colocando humanidade nele.** IA ajudou a tirar o projeto do papel, mas há muito espaço para quem programa, desenha, traduz, testa ou simplesmente percebe que um botão está confuso. Quero um aplicativo que respeite o tempo, os arquivos e o jeito de cada pessoa usar o computador.
 
 Pode fazer um fork, experimentar, modificar o código e dar ao Sissy a sua cara. Quer um visual mais discreto? Uma tradução mais natural? Melhor acessibilidade, desempenho ou uma ideia que ainda nem passou por aqui? Vem construir. Uma mudança pequena e bem cuidada já faz diferença.
 
-Não precisa chegar sabendo Rust nem trazendo uma entrega gigante. Um relato claro, um teste em outro Mac, uma revisão de texto ou um desenho também ajudam a deixar o Sissy mais humano. **[Veja como contribuir](CONTRIBUTING.md).**
+Não precisa chegar sabendo Rust nem trazendo uma entrega gigante. Um relato claro, um teste no Mac ou no Windows, uma revisão de texto ou um desenho também ajudam a deixar o Sissy mais humano. **[Veja como contribuir](CONTRIBUTING.md).**
 
 ## Baixar e testar
 
-A **[versão 0.1.0 alpha está nas Releases](https://github.com/leonardobluestriker/sissy/releases/tag/v0.1.0-alpha)**.
+A **[Beta 0.3.0 para Mac e Windows está nas Releases](https://github.com/leonardobluestriker/sissy/releases/tag/v0.3.0-beta.1)**. Escolha a toca da sua cobrinha:
 
-Baixe o DMG para **Mac com Apple Silicon (M1 e posteriores)**, abra e arraste Sissy para Aplicativos. O arquivo `SHA256SUMS.txt` permite conferir a integridade do download. Esta alpha usa assinatura local ad-hoc, sem notarização Apple, e o macOS pode bloquear a abertura. Comece com arquivos de teste e confira as limitações nas notas da release. Ainda não há um download Intel validado nesta entrega.
+| Sistema | Download | Como abrir |
+| --- | --- | --- |
+| **Mac — Apple Silicon e Intel** | [DMG universal](https://github.com/leonardobluestriker/sissy/releases/download/v0.3.0-beta.1/Sissy-0.3.0-beta.1-macOS-universal.dmg) | Abra o DMG e arraste Sissy para Aplicativos. |
+| **Windows x64 — experimental** | [ZIP portátil](https://github.com/leonardobluestriker/sissy/releases/download/v0.3.0-beta.1/Sissy-0.3.0-beta.1-Windows-x64-experimental.zip) | Extraia o ZIP e execute `Sissy.exe`. Não precisa instalar. |
+
+O Mac usa assinatura local **ad-hoc, sem notarização Apple**; o executável Windows também não tem assinatura digital. O sistema pode alertar ou bloquear a abertura. O pacote universal foi aberto e conferido em Apple Silicon; Intel, versões antigas do macOS e a execução em Windows ainda precisam de testes.
+
+**25 testes automatizados passaram** na beta; um teste que exige um volume descartável não foi executado. Confira `SHA256SUMS.txt`, `RELATORIO.md` e as limitações nos [anexos da release](https://github.com/leonardobluestriker/sissy/releases/tag/v0.3.0-beta.1). Comece com cópias de arquivos de teste — sem dar o bote nos seus arquivos importantes.
 
 ## O Sissy na tela
 
@@ -40,7 +51,7 @@ Baixe o DMG para **Mac com Apple Silicon (M1 e posteriores)**, abra e arraste Si
 
 </details>
 
-## O que já funciona
+## O que já funciona no Mac
 
 - Análise local de pastas pessoais e discos montados em `/Volumes`, selecionados por você.
 - Arquivos grandes e duplicatas por conteúdo, com revisão individual antes do envio ao Lixo pelo Finder.
@@ -50,7 +61,7 @@ Baixe o DMG para **Mac com Apple Silicon (M1 e posteriores)**, abra e arraste Si
 
 Não há conta, telemetria ou servidor remoto no aplicativo. A análise só lê os arquivos; mover ao Lixo exige sua confirmação. Tamanho e idade são pistas para revisão, não uma prova de que um arquivo é inútil.
 
-A versão atual foi compilada e conferida em um Mac Apple Silicon, incluindo leitura de um HD externo e troca de temas. **15 testes automatizados passaram.** O envio ao Lixo em HD externo físico e a compatibilidade com outros Macs ainda precisam de mais testes. A distribuição usa assinatura local ad-hoc, sem notarização Apple.
+A versão anterior foi compilada e conferida em um Mac Apple Silicon, incluindo leitura de um HD externo e troca de temas. **15 testes automatizados passaram.** O envio ao Lixo em HD externo físico e a compatibilidade com outros Macs ainda precisam de mais testes. A distribuição usa assinatura local ad-hoc, sem notarização Apple.
 
 ## Quem faz
 
@@ -59,6 +70,8 @@ A versão atual foi compilada e conferida em um Mac Apple Silicon, incluindo lei
 O Sissy cresce com quem chega para criar, revisar e cuidar dele. A ajuda de IA faz parte da história; as escolhas e a responsabilidade pelo projeto continuam com as pessoas.
 
 ## Desenvolver e testar
+
+O código da beta publicada está na [branch `release/0.3.0-beta.1`](https://github.com/leonardobluestriker/sissy/tree/release/0.3.0-beta.1) e no arquivo de fontes anexado à release. Para reproduzir essa versão a partir de um clone, execute `git switch release/0.3.0-beta.1` antes dos comandos abaixo. A documentação técnica e os relatos históricos a seguir se concentram no macOS; as limitações atuais do Windows estão no início desta página e nas notas da beta.
 
 Instale Rust estável (1.88 ou superior; o lockfile foi resolvido com 1.99.1) pelo rustup. No Mac, instale também `xcode-select --install`.
 
